@@ -1,35 +1,35 @@
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
 
 export type InvoiceItem = {
-  productId: string
-  productName: string
-  quantity: number
-  price: number
-  subtotal: number
-}
+  productId: string;
+  productName: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
+};
 
 export type Payment = {
-  amount: number
-  date: Date
-  method: string
-}
+  amount: number;
+  date: Date;
+  method: string;
+};
 
 export type Invoice = {
-  _id: string
-  invoiceNumber: string
-  customerName: string
-  clientWhatsapp: string
-  items: InvoiceItem[]
-  subtotal: number
-  discount: number
-  total: number
-  payments: Payment[]
-  paidAmount: number
-  balance: number
-  status: 'pending' | 'partial' | 'paid'
-  createdAt: Date
-  updatedAt: Date
-}
+  _id: string;
+  invoiceNumber: string;
+  customerName: string;
+  clientWhatsapp: string;
+  items: InvoiceItem[];
+  subtotal: number;
+  discount: number;
+  total: number;
+  payments: Payment[];
+  paidAmount: number;
+  balance: number;
+  status: "pending" | "partial" | "paid";
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 const InvoiceItemSchema = new mongoose.Schema(
   {
@@ -39,17 +39,17 @@ const InvoiceItemSchema = new mongoose.Schema(
     price: { type: Number, required: true },
     subtotal: { type: Number, required: true },
   },
-  { _id: false }
-)
+  { _id: false },
+);
 
 const PaymentSchema = new mongoose.Schema(
   {
     amount: { type: Number, required: true },
     date: { type: Date, default: Date.now },
-    method: { type: String, default: 'cash' },
+    method: { type: String, default: "cash" },
   },
-  { _id: false }
-)
+  { _id: false },
+);
 
 const InvoiceSchema = new mongoose.Schema(
   {
@@ -70,21 +70,22 @@ const InvoiceSchema = new mongoose.Schema(
     subtotal: { type: Number, required: true, default: 0 },
     discount: { type: Number, required: true, default: 0 },
     total: { type: Number, required: true, default: 0 },
+    image: { type: String },
     payments: [PaymentSchema],
     paidAmount: { type: Number, required: true, default: 0 },
     balance: { type: Number, required: true, default: 0 },
     status: {
       type: String,
-      enum: ['pending', 'partial', 'paid'],
-      default: 'pending',
+      enum: ["pending", "partial", "paid"],
+      default: "pending",
     },
   },
-  { timestamps: true }
-)
+  { timestamps: true },
+);
 
 if (mongoose.models.Invoice) {
-  delete mongoose.models.Invoice
+  delete mongoose.models.Invoice;
 }
-const InvoiceModel = mongoose.model('Invoice', InvoiceSchema)
+const InvoiceModel = mongoose.model("Invoice", InvoiceSchema);
 
-export default InvoiceModel
+export default InvoiceModel;
