@@ -6,6 +6,7 @@ export type Product = {
   price: number
   description?: string
   stock: number
+  image?: string
 }
 
 const ProductSchema = new mongoose.Schema(

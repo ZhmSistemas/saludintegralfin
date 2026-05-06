@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { showToast } from 'nextjs-toast-notify'
@@ -16,7 +16,17 @@ type FormData = {
 
 export default function EditProductForm({ product }: { product: Product }) {
   const [isLoading, setIsLoading] = useState(false)
+  const [imagen, setImagen] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string>(product.image || "")
   const router = useRouter()
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl && !previewUrl.startsWith('http')) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
+  }, [previewUrl])
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     defaultValues: {
@@ -27,14 +37,70 @@ export default function EditProductForm({ product }: { product: Product }) {
     }
   })
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (files && files[0]) {
+      setImagen(files[0])
+      const objectUrl = URL.createObjectURL(files[0])
+      setPreviewUrl(objectUrl)
+    }
+  }
+
+  const uploadImage = async (file: File) => {
+    if (!file) return null
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append(
+      "upload_preset",
+      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || ""
+    )
+    formData.append("folder", "imageproduct")
+    try {
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+      if (!cloudName) {
+        throw new Error("El nombre de la nube de Cloudinary no está definido")
+      }
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      )
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(`Cloudinary error: ${errorData.error.message}`)
+      }
+      const data = await res.json()
+      return {
+        public_id: data.public_id,
+        image_url: data.secure_url,
+      }
+    } catch (error) {
+      console.error("Error al subir la imagen:", error)
+      throw error
+    }
+  }
+
   const onSubmit = async (data: FormData) => {
     setIsLoading(true)
 
     try {
+      let imageUrl = product.image || ""
+
+      if (imagen) {
+        const uploadedImage = await uploadImage(imagen)
+        if (!uploadedImage || !uploadedImage.image_url) {
+          throw new Error("No se pudo obtener la URL de la imagen subida")
+        }
+        imageUrl = uploadedImage.image_url
+      }
+
       const response = await fetch(`/api/products/${product._id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ ...data, image: imageUrl }),
       })
 
       if (!response.ok) {
@@ -44,7 +110,6 @@ export default function EditProductForm({ product }: { product: Product }) {
 
       showToast.success('Producto actualizado exitosamente')
       setTimeout(() => {
-        // Notificar al dashboard padre que debe cambiar la selección
         if (window.parent !== window) {
           window.parent.postMessage({
             type: 'UPDATE_DASHBOARD_SELECTION',
@@ -138,6 +203,27 @@ export default function EditProductForm({ product }: { product: Product }) {
               rows={3}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Imagen del Producto
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+            />
+            {previewUrl && (
+              <div className="mt-4">
+                <img
+                  src={previewUrl}
+                  alt="Vista previa"
+                  className="h-32 w-32 rounded-md object-cover"
+                />
+              </div>
+            )}
           </div>
         </div>
 

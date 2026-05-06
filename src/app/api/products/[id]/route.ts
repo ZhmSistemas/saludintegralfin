@@ -24,13 +24,14 @@ export const PATCH = async (request: NextRequest, { params }: { params: Promise<
     await dbConnect()
     const { id } = await params
     const body = await request.json()
-    const { name, price, description, stock } = body
+    const { name, price, description, stock, image } = body
 
     const updateData: Record<string, unknown> = {}
     if (name !== undefined) updateData.name = name
     if (price !== undefined) updateData.price = Number(price)
     if (description !== undefined) updateData.description = description
     if (stock !== undefined) updateData.stock = Number(stock)
+    if (image !== undefined) updateData.image = image
 
     const updatedProduct = await ProductModel.findByIdAndUpdate(
       id,
