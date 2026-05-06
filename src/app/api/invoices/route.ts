@@ -7,13 +7,17 @@ export const GET = async (request: NextRequest) => {
     await dbConnect()
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
+    const clientWhatsapp = searchParams.get('clientWhatsapp')
 
-    const filter: Record<string, unknown> = {}
+    const query: { status?: string; clientWhatsapp?: string } = {}
     if (status && status !== 'all') {
-      filter.status = status
+      query.status = status
+    }
+    if (clientWhatsapp) {
+      query.clientWhatsapp = clientWhatsapp
     }
 
-    const invoices = await InvoiceModel.find(filter).sort({ createdAt: -1 })
+    const invoices = await InvoiceModel.find(query).sort({ createdAt: -1 })
     return Response.json(invoices, { status: 200 })
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Error desconocido'

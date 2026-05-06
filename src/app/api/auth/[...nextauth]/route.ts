@@ -10,12 +10,14 @@ declare module "next-auth" {
     id: string;
     isAdmin: boolean;
     isUser: boolean;
+    whatsapp?: string;
   }
   interface Session {
     user: User & {
       id?: string;
       isAdmin?: boolean;
       isUser?: boolean;
+      whatsapp?: string;
     };
   }
 }
@@ -25,6 +27,7 @@ declare module "next-auth/jwt" {
     id?: string;
     isAdmin?: boolean;
     isUser?: boolean;
+    whatsapp?: string;
   }
 }
 
@@ -62,6 +65,7 @@ export const authOptions: AuthOptions = {
           email: userFound.email,
           isAdmin: userFound.isAdmin,
           isUser: userFound.isUser,
+          whatsapp: userFound.whatsapp,
         };
       },
     }),
@@ -72,6 +76,7 @@ export const authOptions: AuthOptions = {
         token.id = user.id;
         token.isAdmin = user.isAdmin;
         token.isUser = user.isUser;
+        token.whatsapp = user.whatsapp;
       }
 
       return token;
@@ -81,6 +86,7 @@ export const authOptions: AuthOptions = {
         session.user.id = token.id as string;
         session.user.isAdmin = token.isAdmin as boolean;
         session.user.isUser = token.isUser as boolean;
+        session.user.whatsapp = token.whatsapp as string;
       }
 
       return session;
