@@ -8,7 +8,9 @@ import {
   Package,
   Trash2,
   AlertTriangle,
+  Pencil,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type InvoiceItem = {
   productId: string;
@@ -40,6 +42,7 @@ type Invoice = {
 };
 
 export default function InvoiceList() {
+  const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedInvoice, setExpandedInvoice] = useState<string | null>(null);
@@ -342,6 +345,16 @@ export default function InvoiceList() {
                     <div className="text-sm text-gray-500 hidden sm:block">
                       {formatDate(invoice.createdAt)}
                     </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        router.push(`/dashboard/facturas/editafactura/${invoice._id}`);
+                      }}
+                      className="rounded-md p-1 text-indigo-600 hover:bg-indigo-50"
+                      title="Editar factura"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
                     <button
                       onClick={(e) => confirmDelete(invoice._id, e)}
                       className="rounded-md p-1 text-red-600 hover:bg-red-50"

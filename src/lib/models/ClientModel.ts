@@ -14,6 +14,7 @@ const ClientSchema = new Schema({
   _id: { type: String, required: true },
   establishmentName: { type: String, required: true },
   contactName: { type: String, required: true },
+  whatsapp: { type: String },
   address: { type: String, required: true },
 }, { timestamps: true })
 

@@ -26,7 +26,7 @@ export const POST = async (request: NextRequest) => {
     }
 
     await dbConnect()
-    const newClient = new ClientModel({ _id: whatsapp, establishmentName, contactName, address })
+    const newClient = new ClientModel({ _id: whatsapp, establishmentName, contactName, whatsapp, address })
     await newClient.save()
 
     return Response.json(
