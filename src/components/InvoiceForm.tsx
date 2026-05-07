@@ -287,7 +287,7 @@ export default function InvoiceForm() {
               htmlFor="imagen"
               className="block text-sm font-medium text-gray-700"
             >
-              Imagen del Producto
+              Imagen Factura
             </label>
             <input
               id="imagen"
