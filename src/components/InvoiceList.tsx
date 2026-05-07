@@ -9,7 +9,9 @@ import {
   Trash2,
   AlertTriangle,
   Pencil,
+  X,
 } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 type InvoiceItem = {
@@ -39,6 +41,7 @@ type Invoice = {
   paidAmount: number;
   balance: number;
   status: "pending" | "partial" | "paid";
+  image?: string;
   createdAt: string;
 };
 
@@ -55,6 +58,7 @@ export default function InvoiceList() {
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [addingPayment, setAddingPayment] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const filteredInvoices = invoices.filter((invoice) => {
     if (!searchTerm.trim()) return true;
@@ -311,9 +315,27 @@ export default function InvoiceList() {
                   onClick={() => toggleExpand(invoice._id)}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
-                      <Package className="h-5 w-5 text-indigo-600" />
-                    </div>
+                    {invoice.image ? (
+                      <div
+                        className="h-12 w-12 flex-shrink-0 cursor-pointer overflow-hidden rounded-md border border-gray-200"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage(invoice.image!);
+                        }}
+                      >
+                        <Image
+                          src={invoice.image}
+                          alt="Factura"
+                          width={48}
+                          height={48}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                        <Package className="h-5 w-5 text-indigo-600" />
+                      </div>
+                    )}
                     <div>
                       <p className="font-semibold text-gray-900">
                         {invoice.invoiceNumber}
@@ -586,6 +608,28 @@ export default function InvoiceList() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button
+            onClick={() => setSelectedImage(null)}
+            className="absolute right-4 top-4 rounded-full bg-white/20 p-2 text-white transition-colors hover:bg-white/40"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <Image
+            src={selectedImage}
+            alt="Factura ampliada"
+            width={1200}
+            height={1600}
+            className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
     </div>
