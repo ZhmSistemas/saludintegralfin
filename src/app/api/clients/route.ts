@@ -16,9 +16,9 @@ export const GET = async (request: NextRequest) => {
 export const POST = async (request: NextRequest) => {
   try {
     const body = await request.json()
-    const { establishmentName, contactName, whatsapp, address } = body
+    const { establishmentName, contactName, whatsapp, email, address } = body
 
-    if (!establishmentName || !contactName || !whatsapp || !address) {
+    if (!establishmentName || !contactName || !whatsapp || !email || !address) {
       return Response.json(
         { message: 'Todos los campos son obligatorios' },
         { status: 422 }
@@ -26,7 +26,7 @@ export const POST = async (request: NextRequest) => {
     }
 
     await dbConnect()
-    const newClient = new ClientModel({ _id: whatsapp, establishmentName, contactName, whatsapp, address })
+    const newClient = new ClientModel({ _id: whatsapp, establishmentName, contactName, whatsapp, email, address })
     await newClient.save()
 
     return Response.json(

@@ -11,6 +11,7 @@ const clientSchema = z.object({
   establishmentName: z.string().min(2, 'El nombre del establecimiento debe tener al menos 2 caracteres'),
   contactName: z.string().min(2, 'El nombre de contacto debe tener al menos 2 caracteres'),
   whatsapp: z.string().min(10, 'El número de WhatsApp debe tener al menos 10 dígitos'),
+  email: z.string().min(1, 'El correo electrónico es obligatorio').email('Correo electrónico inválido'),
   address: z.string().min(5, 'La dirección debe tener al menos 5 caracteres'),
 })
 
@@ -22,7 +23,7 @@ export default function ClientForm() {
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ClientFormInputs>({
     resolver: zodResolver(clientSchema),
-    defaultValues: { establishmentName: '', contactName: '', whatsapp: '', address: '' }
+    defaultValues: { establishmentName: '', contactName: '', whatsapp: '', email: '', address: '' }
   })
 
   const onSubmit = async (data: ClientFormInputs) => {
@@ -106,6 +107,21 @@ export default function ClientForm() {
         />
         {errors.whatsapp && (
           <p className="mt-1 text-sm text-red-600">{errors.whatsapp.message}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+          Correo Electrónico
+        </label>
+        <input
+          id="email"
+          type="email"
+          {...register('email')}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+        />
+        {errors.email && (
+          <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
         )}
       </div>
 
