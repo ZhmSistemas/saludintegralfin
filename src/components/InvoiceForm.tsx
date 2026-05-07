@@ -68,11 +68,13 @@ export default function InvoiceForm() {
     defaultValues: {
       customerName: "",
       invoiceNumber: "",
+      invoiceDate: new Date().toISOString().split('T')[0],
     },
   });
 
   const customerName = watch("customerName");
   const invoiceNumber = watch("invoiceNumber");
+  const invoiceDate = watch("invoiceDate");
 
   useEffect(() => {
     fetch("/api/products")
@@ -202,7 +204,7 @@ export default function InvoiceForm() {
   };
 
   const onSubmit = async () => {
-    if (!customerName || !invoiceNumber || items.length === 0) return;
+    if (!customerName || !invoiceNumber || !invoiceDate || items.length === 0) return;
 
     setIsLoading(true);
 
@@ -216,6 +218,12 @@ export default function InvoiceForm() {
         throw new Error("No se pudo obtener la URL de la imagen subida");
       }
 
+      const adjustedInvoiceDate = (() => {
+        const date = new Date(invoiceDate + "T00:00:00");
+        date.setHours(date.getHours() + 5);
+        return date.toISOString();
+      })();
+
       const response = await fetch("/api/invoices", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -223,6 +231,7 @@ export default function InvoiceForm() {
           invoiceNumber,
           customerName,
           clientWhatsapp,
+          invoiceDate: adjustedInvoiceDate,
           items,
           discount: discountAmount,
           payments: payments.map((p) => ({
@@ -272,7 +281,7 @@ export default function InvoiceForm() {
       <h1 className="mb-6 text-3xl font-bold text-gray-900">Crear Factura</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 ">
           <div>
             <label
               htmlFor="imagen"
@@ -314,6 +323,31 @@ export default function InvoiceForm() {
             {errors.invoiceNumber && (
               <p className="mt-1 text-sm text-red-600">
                 {errors.invoiceNumber.message}
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Fecha de Factura
+            </label>
+            <input
+              type="date"
+              max={new Date().toISOString().split('T')[0]}
+              {...register("invoiceDate", {
+                required: "La fecha de factura es obligatoria",
+                validate: (value) => {
+                  const selectedDate = new Date(value)
+                  const today = new Date()
+                  today.setHours(0, 0, 0, 0)
+                  return selectedDate <= today || "La fecha no puede ser posterior al día de hoy"
+                }
+              })}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            />
+            {errors.invoiceDate && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.invoiceDate.message}
               </p>
             )}
           </div>

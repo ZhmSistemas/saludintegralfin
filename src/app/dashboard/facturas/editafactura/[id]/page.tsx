@@ -41,6 +41,7 @@ type InvoiceData = {
   invoiceNumber: string;
   customerName: string;
   clientWhatsapp?: string;
+  invoiceDate?: string;
   items: InvoiceItem[];
   subtotal: number;
   discount: number;
@@ -78,10 +79,12 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     handleSubmit,
     setValue,
     watch,
+    formState: { errors },
   } = useForm({
     defaultValues: {
       customerName: "",
       invoiceNumber: "",
+      invoiceDate: "",
     },
   });
 
@@ -112,6 +115,12 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
         setInvoice(invoiceData);
         setValue("customerName", invoiceData.customerName);
         setValue("invoiceNumber", invoiceData.invoiceNumber);
+        
+        if (invoiceData.invoiceDate) {
+          const date = new Date(invoiceData.invoiceDate);
+          date.setHours(date.getHours() - 5);
+          setValue("invoiceDate", date.toISOString().split('T')[0]);
+        }
         
         const whatsapp = invoiceData.clientWhatsapp || "";
         setClientWhatsapp(whatsapp);
@@ -155,6 +164,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
   };
 
   const customerName = watch("customerName");
+  const invoiceDate = watch("invoiceDate");
 
   useEffect(() => {
     fetch("/api/products")
@@ -323,12 +333,19 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
         }
       }
 
+      const adjustedInvoiceDate = invoiceDate ? (() => {
+        const date = new Date(invoiceDate + "T00:00:00");
+        date.setHours(date.getHours() + 5);
+        return date.toISOString();
+      })() : undefined;
+
       const response = await fetch(`/api/invoices/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customerName,
           clientWhatsapp,
+          invoiceDate: adjustedInvoiceDate,
           items,
           discount: discountAmount,
           payments: payments.map((p) => ({
@@ -425,6 +442,31 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
               readOnly
               className="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 shadow-sm sm:text-sm"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Fecha de Factura
+            </label>
+            <input
+              type="date"
+              max={new Date().toISOString().split('T')[0]}
+              {...register("invoiceDate", {
+                required: "La fecha de factura es obligatoria",
+                validate: (value) => {
+                  const selectedDate = new Date(value)
+                  const today = new Date()
+                  today.setHours(0, 0, 0, 0)
+                  return selectedDate <= today || "La fecha no puede ser posterior al día de hoy"
+                }
+              })}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            />
+            {errors.invoiceDate && (
+              <p className="mt-1 text-sm text-red-600">
+                {errors.invoiceDate.message}
+              </p>
+            )}
           </div>
 
           <div>

@@ -28,6 +28,7 @@ type Invoice = {
   invoiceNumber: string;
   customerName: string;
   clientWhatsapp: string;
+  invoiceDate: string;
   items: InvoiceItem[];
   subtotal: number;
   discount: number;
@@ -211,7 +212,7 @@ export default function ListaFacturas() {
                   </div>
                   {getStatusBadge(invoice.status)}
                   <div className="text-sm text-gray-500 hidden sm:block">
-                    {formatDate(invoice.createdAt)}
+                    {formatDate(invoice.invoiceDate || invoice.createdAt)}
                   </div>
                   {expandedInvoice === invoice._id ? (
                     <ChevronUp className="h-5 w-5 text-gray-400" />

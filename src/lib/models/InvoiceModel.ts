@@ -19,6 +19,7 @@ export type Invoice = {
   invoiceNumber: string;
   customerName: string;
   clientWhatsapp: string;
+  invoiceDate: Date;
   items: InvoiceItem[];
   subtotal: number;
   discount: number;
@@ -65,6 +66,11 @@ const InvoiceSchema = new mongoose.Schema(
     clientWhatsapp: {
       type: String,
       required: true,
+    },
+    invoiceDate: {
+      type: Date,
+      required: true,
+      default: Date.now,
     },
     items: [InvoiceItemSchema],
     subtotal: { type: Number, required: true, default: 0 },

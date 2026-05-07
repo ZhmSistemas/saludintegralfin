@@ -30,6 +30,7 @@ type Invoice = {
   _id: string;
   invoiceNumber: string;
   customerName: string;
+  invoiceDate: string;
   items: InvoiceItem[];
   subtotal: number;
   discount: number;
@@ -343,7 +344,7 @@ export default function InvoiceList() {
                     </div>
                     {getStatusBadge(invoice.status)}
                     <div className="text-sm text-gray-500 hidden sm:block">
-                      {formatDate(invoice.createdAt)}
+                      {formatDate(invoice.invoiceDate || invoice.createdAt)}
                     </div>
                     <button
                       onClick={(e) => {
@@ -552,10 +553,10 @@ export default function InvoiceList() {
 
       {deleteConfirmId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="mx-4 w-full max-w-md rounded-lg bg-white  shadow-xl">
+          <div className="mx-4 w-full max-w-md rounded-lg bg-white shadow-xl p-2">
             <div className="mb-4 flex items-center gap-3">
               <AlertTriangle className="h-6 w-6 text-red-500" />
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-gray-900 text-center w-full">
                 Confirmar eliminación
               </h3>
             </div>
