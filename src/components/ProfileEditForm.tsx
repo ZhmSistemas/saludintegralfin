@@ -307,14 +307,14 @@ export default function ProfileEditForm() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-gray-700">Correo</label>
-                {editSection !== 'email' && (
+                {/* {editSection !== 'email' && (
                   <button
                     onClick={handleEditEmail}
                     className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
                   >
                     Editar
                   </button>
-                )}
+                )} */}
               </div>
 
               {editSection === 'email' ? (
@@ -361,14 +361,14 @@ export default function ProfileEditForm() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-gray-700">Celular (WhatsApp)</label>
-                {editSection !== 'whatsapp' && (
+               {/*  {editSection !== 'whatsapp' && (
                   <button
                     onClick={handleEditWhatsapp}
                     className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
                   >
                     Editar
                   </button>
-                )}
+                )} */}
               </div>
 
               {editSection === 'whatsapp' ? (
