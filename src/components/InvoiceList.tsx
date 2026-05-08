@@ -279,6 +279,45 @@ export default function InvoiceList() {
           </div>
         </div>
 
+        {filteredInvoices.length > 0 && (
+          <div className="grid w-full grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-center">
+              <p className="text-xs font-medium text-indigo-600 uppercase">Todas</p>
+              <p className="text-lg font-bold text-indigo-700">
+                {formatPrice(filteredInvoices.reduce((sum, inv) => sum + inv.total, 0))}
+              </p>
+            </div>
+            <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-center">
+              <p className="text-xs font-medium text-red-600 uppercase">Pendiente</p>
+              <p className="text-lg font-bold text-red-700">
+                {formatPrice(
+                  filteredInvoices.reduce((sum, inv) => sum + inv.balance, 0),
+                )}
+              </p>
+            </div>
+            <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-center">
+              <p className="text-xs font-medium text-yellow-600 uppercase">Abonada</p>
+              <p className="text-lg font-bold text-yellow-700">
+                {formatPrice(
+                  filteredInvoices
+                    .filter((inv) => inv.status === "partial")
+                    .reduce((sum, inv) => sum + inv.paidAmount, 0),
+                )}
+              </p>
+            </div>
+            <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center">
+              <p className="text-xs font-medium text-green-600 uppercase">Pagada</p>
+              <p className="text-lg font-bold text-green-700">
+                {formatPrice(
+                  filteredInvoices
+                    .filter((inv) => inv.status === "paid")
+                    .reduce((sum, inv) => sum + inv.total, 0),
+                )}
+              </p>
+            </div>
+          </div>
+        )}
+
         {filteredInvoices.length === 0 ? (
           <div className="rounded-lg border border-gray-200 bg-white text-center text-gray-500">
             {searchTerm
