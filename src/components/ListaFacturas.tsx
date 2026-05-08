@@ -145,9 +145,57 @@ export default function ListaFacturas() {
     <div className="mx-auto w-full p-6 lg:w-5/6">
       <h1 className="mb-6 text-3xl font-bold text-gray-900">Mis Facturas</h1>
       <div className="mb-4">
-        <p className="text-sm text-gray-600">Usuario: {session?.user?.name}</p>
-        <p className="text-sm text-gray-600">WhatsApp: {session?.user?.whatsapp}</p>
+        <p className="text-sm text-gray-600">Usuario: {session?.user?.name}</p>        
       </div>
+
+      {invoices.length > 0 && (
+        <div className="mb-6 grid w-full grid-cols-2 gap-3 md:grid-cols-4">
+          <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-center">
+            <p className="text-xs font-medium text-indigo-600 uppercase">Todas</p>
+            <p className="text-lg font-bold text-indigo-700">
+              {formatPrice(invoices.reduce((sum, inv) => sum + inv.total, 0))}
+            </p>
+            <p className="mt-1 text-xs text-indigo-500">
+              {invoices.length} factura{invoices.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-center">
+            <p className="text-xs font-medium text-red-600 uppercase">Pendiente</p>
+            <p className="text-lg font-bold text-red-700">
+              {formatPrice(invoices.reduce((sum, inv) => sum + inv.balance, 0))}
+            </p>
+            <p className="mt-1 text-xs text-red-500">
+              {invoices.filter((inv) => inv.balance > 0).length} factura{invoices.filter((inv) => inv.balance > 0).length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-center">
+            <p className="text-xs font-medium text-yellow-600 uppercase">Abonos</p>
+            <p className="text-lg font-bold text-yellow-700">
+              {formatPrice(
+                invoices
+                  .filter((inv) => inv.status === "partial")
+                  .reduce((sum, inv) => sum + inv.paidAmount, 0),
+              )}
+            </p>
+            <p className="mt-1 text-xs text-yellow-500">
+              {invoices.filter((inv) => inv.status === "partial").length} factura{invoices.filter((inv) => inv.status === "partial").length !== 1 ? "s" : ""}
+            </p>
+          </div>
+          <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center">
+            <p className="text-xs font-medium text-green-600 uppercase">Pagada</p>
+            <p className="text-lg font-bold text-green-700">
+              {formatPrice(
+                invoices
+                  .filter((inv) => inv.status === "paid")
+                  .reduce((sum, inv) => sum + inv.total, 0),
+              )}
+            </p>
+            <p className="mt-1 text-xs text-green-500">
+              {invoices.filter((inv) => inv.status === "paid").length} factura{invoices.filter((inv) => inv.status === "paid").length !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </div>
+      )}
 
       {invoices.length === 0 ? (
         <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-500">
