@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { User } from '@/lib/models/UserModel'
 import { showToast } from 'nextjs-toast-notify'
-import { AlertTriangle } from 'lucide-react'
+import { AlertTriangle, Trash2 } from 'lucide-react'
 
 export default function UserList() {
   const [users, setUsers] = useState<User[]>([])
@@ -21,6 +21,16 @@ export default function UserList() {
     userName: '',
     currentStatus: false
   })
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean
+    userId: string | null
+    userName: string
+  }>({
+    isOpen: false,
+    userId: null,
+    userName: ''
+  })
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     fetchUsers()
@@ -107,6 +117,39 @@ export default function UserList() {
     }
   }
 
+  const openDeleteConfirm = (userId: string, userName: string) => {
+    setDeleteConfirm({ isOpen: true, userId, userName })
+  }
+
+  const closeDeleteConfirm = () => {
+    setDeleteConfirm({ isOpen: false, userId: null, userName: '' })
+  }
+
+  const confirmDeleteUser = async () => {
+    if (!deleteConfirm.userId) return
+
+    try {
+      setIsDeleting(true)
+      const response = await fetch(`/api/users/${deleteConfirm.userId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Error al eliminar el usuario')
+      }
+
+      setUsers(users.filter(u => u._id !== deleteConfirm.userId))
+      closeDeleteConfirm()
+      showToast.success('Usuario eliminado exitosamente')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+      setError(errorMessage)
+      showToast.error(errorMessage)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   if (loading) {
     return <div className="p-4">Cargando usuarios...</div>
   }
@@ -148,19 +191,28 @@ export default function UserList() {
                   </span>
                 </td>
                 <td className="border border-gray-300 px-4 py-2 text-center">
-                  <button
-                    onClick={() => toggleAdmin(user._id, user.isAdmin)}
-                    disabled={updating === user._id}
-                    className={`px-4 py-2 rounded text-white font-semibold transition ${
-                      user.isAdmin
-                        ? 'bg-red-500 hover:bg-red-600'
-                        : 'bg-blue-500 hover:bg-blue-600'
-                    } ${updating === user._id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {updating === user._id ? 'Actualizando...' : (
-                      user.isAdmin ? 'Quitar Admin' : 'Hacer Admin'
-                    )}
-                  </button>
+                  <div className="flex items-center justify-center gap-2">
+                    <button
+                      onClick={() => toggleAdmin(user._id, user.isAdmin)}
+                      disabled={updating === user._id}
+                      className={`px-4 py-2 rounded text-white font-semibold transition ${
+                        user.isAdmin
+                          ? 'bg-red-500 hover:bg-red-600'
+                          : 'bg-blue-500 hover:bg-blue-600'
+                      } ${updating === user._id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {updating === user._id ? 'Actualizando...' : (
+                        user.isAdmin ? 'Quitar Admin' : 'Hacer Admin'
+                      )}
+                    </button>
+                    <button
+                      onClick={() => openDeleteConfirm(user._id, user.name)}
+                      className="rounded-md p-2 text-red-600 hover:bg-red-50 transition"
+                      title="Eliminar usuario"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -198,6 +250,39 @@ export default function UserList() {
                 } disabled:opacity-70`}
               >
                 {updating === confirmModal.userId ? 'Actualizando...' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteConfirm.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center gap-3">
+              <AlertTriangle className="h-6 w-6 text-red-500" />
+              <h3 className="text-lg font-semibold text-gray-900">
+                Confirmar eliminación
+              </h3>
+            </div>
+            <p className="mb-6 text-sm text-gray-600">
+              ¿Está seguro que desea eliminar al usuario{" "}
+              <span className="font-semibold">{deleteConfirm.userName}</span>?
+              Esta acción no se puede deshacer.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={closeDeleteConfirm}
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmDeleteUser}
+                disabled={isDeleting}
+                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-70"
+              >
+                {isDeleting ? 'Eliminando...' : 'Eliminar'}
               </button>
             </div>
           </div>
