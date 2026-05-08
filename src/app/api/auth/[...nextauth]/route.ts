@@ -50,14 +50,14 @@ export const authOptions: AuthOptions = {
         const userFound = await UserModel.findOne({ email: credentials.email });
         console.log("userFound", userFound);
 
-        if (!userFound) throw new Error("Credenciales invalidas");
+        if (!userFound) throw new Error("Email o contraseña incorrectos");
 
         const validPassword = await bcrypt.compare(
           credentials.password as string,
           userFound.password
         );
 
-        if (!validPassword) throw new Error("Invalid credentials");
+        if (!validPassword) throw new Error("contraseña incorrecta");
 
         return {
           id: userFound._id.toString(),

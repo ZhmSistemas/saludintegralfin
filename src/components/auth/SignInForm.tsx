@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff } from 'lucide-react';
 import { signIn, getSession } from "next-auth/react";
+import { showToast } from 'nextjs-toast-notify';
 import { useRouter } from "next/navigation";
 
 // Esquema de validación con Zod
@@ -51,7 +52,10 @@ export default function LoginForm() {
       });
 
       if (!res?.ok) {
-        console.log(res);
+        showToast.error(res?.error || 'Error al iniciar sesión. Verifica tus credenciales.', {
+          duration: 5000,
+          position: 'top-center',
+        });
         return;
       }
 
@@ -61,7 +65,7 @@ export default function LoginForm() {
       if (session?.user?.isAdmin) {
         router.push('/dashboard');
       } else {
-        router.push('/');
+        router.push('/usuario/facturas');
       }
     } finally {
       setIsLoading(false);
