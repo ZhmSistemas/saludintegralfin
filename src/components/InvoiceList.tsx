@@ -286,6 +286,9 @@ export default function InvoiceList() {
               <p className="text-lg font-bold text-indigo-700">
                 {formatPrice(filteredInvoices.reduce((sum, inv) => sum + inv.total, 0))}
               </p>
+              <p className="mt-1 text-xs text-indigo-500">
+                {filteredInvoices.length} factura{filteredInvoices.length !== 1 ? "s" : ""}
+              </p>
             </div>
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-center">
               <p className="text-xs font-medium text-red-600 uppercase">Pendiente</p>
@@ -293,6 +296,9 @@ export default function InvoiceList() {
                 {formatPrice(
                   filteredInvoices.reduce((sum, inv) => sum + inv.balance, 0),
                 )}
+              </p>
+              <p className="mt-1 text-xs text-red-500">
+                {filteredInvoices.filter((inv) => inv.balance > 0).length} factura{filteredInvoices.filter((inv) => inv.balance > 0).length !== 1 ? "s" : ""}
               </p>
             </div>
             <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-center">
@@ -304,6 +310,9 @@ export default function InvoiceList() {
                     .reduce((sum, inv) => sum + inv.paidAmount, 0),
                 )}
               </p>
+              <p className="mt-1 text-xs text-yellow-500">
+                {filteredInvoices.filter((inv) => inv.status === "partial").length} factura{filteredInvoices.filter((inv) => inv.status === "partial").length !== 1 ? "s" : ""}
+              </p>
             </div>
             <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center">
               <p className="text-xs font-medium text-green-600 uppercase">Pagada</p>
@@ -313,6 +322,9 @@ export default function InvoiceList() {
                     .filter((inv) => inv.status === "paid")
                     .reduce((sum, inv) => sum + inv.total, 0),
                 )}
+              </p>
+              <p className="mt-1 text-xs text-green-500">
+                {filteredInvoices.filter((inv) => inv.status === "paid").length} factura{filteredInvoices.filter((inv) => inv.status === "paid").length !== 1 ? "s" : ""}
               </p>
             </div>
           </div>
