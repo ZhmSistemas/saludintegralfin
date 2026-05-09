@@ -12,7 +12,7 @@ export default async function DashboardLayout({
 
   // Si no hay sesión o el usuario NO es admin, redirigir
   if (!session || !session.user?.isAdmin) {
-    redirect("/"); // Puedes cambiar a "/auth/login" o donde gustes
+    redirect("/auth/login"); // Puedes cambiar a "/auth/login" o donde gustes
   }
 
   // Si es admin, mostramos el contenido del dashboard SIN el Navbar general

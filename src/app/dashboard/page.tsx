@@ -196,7 +196,7 @@ export default function DashboardPage() {
       {/* Botón toggle sidebar */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="absolute top-4 right-4 z-30 bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition-colors"
+        className="absolute top-4 right-4 z-30 bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition-colors lg:hidden"
         title={sidebarOpen ? 'Cerrar menú' : 'Abrir menú'}
       >
         {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
