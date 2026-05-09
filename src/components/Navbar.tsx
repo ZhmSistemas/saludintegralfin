@@ -128,28 +128,7 @@ const Navbar: React.FC = () => {
         >
           <div className="mx-4 w-full max-w-sm bg-blue-600/90 backdrop-blur-sm rounded-lg shadow-xl border border-white/20 overflow-hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-              <Link
-                href="/"
-                className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                Inicio
-              </Link>
-              <Link
-                href="/nosotros"
-                className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                Nosotros
-              </Link>
-              <Link
-                href="/productos"
-                className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                Productos
-              </Link>
-              {session ? (
+               {session ? (
                 <>
                   <div className="px-3 py-2 text-sm font-medium text-blue-200 border-b border-blue-500/30">
                     Hola, {session.user?.name?.split(' ')[0]}
@@ -188,6 +167,27 @@ const Navbar: React.FC = () => {
                 </Link>
               )}
             </div>
+              <Link
+                href="/"
+                className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
+                onClick={() => setIsOpen(false)}
+              >
+                Inicio
+              </Link>
+              <Link
+                href="/nosotros"
+                className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
+                onClick={() => setIsOpen(false)}
+              >
+                Nosotros
+              </Link>
+              <Link
+                href="/productos"
+                className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
+                onClick={() => setIsOpen(false)}
+              >
+                Productos
+              </Link>             
           </div>
         </div>
       )}
