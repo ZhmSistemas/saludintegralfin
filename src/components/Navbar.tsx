@@ -168,7 +168,7 @@ const Navbar: React.FC = () => {
                       className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
                       onClick={() => setIsOpen(false)}
                     >
-                      Usuario
+                      Mis Facturas
                     </Link>
                   )}
                   <button 
