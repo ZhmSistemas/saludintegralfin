@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { LogOut, FileText } from "lucide-react";
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -59,8 +60,9 @@ const Navbar: React.FC = () => {
                       <div className="border-t border-gray-200"></div>
                       <button 
                         onClick={() => { setIsProfileOpen(false); signOut({ callbackUrl: '/auth/login' }); }} 
-                        className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                        className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center gap-2"
                       >
+                        <LogOut className="h-4 w-4" />
                         Cerrar sesión
                       </button>
                     </div>
@@ -142,18 +144,20 @@ const Navbar: React.FC = () => {
                       Dashboard
                     </Link>
                   ) : (
-                    <Link
-                      href="/usuario/facturas"
-                      className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Mis Facturas
-                    </Link>
+                      <Link
+                        href="/usuario/facturas"
+                        className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white flex items-center gap-2"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <FileText className="h-4 w-4" />
+                        Mis Facturas
+                      </Link>
                   )}
                   <button 
                     onClick={() => { setIsOpen(false); signOut({ callbackUrl: '/auth/login' }); }} 
-                    className="w-full text-left hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-red-300"
+                    className="w-full text-left hover:bg-blue-700/50 px-3 py-2 rounded-md text-base font-medium text-red-300 flex items-center gap-2"
                   >
+                    <LogOut className="h-4 w-4" />
                     Cerrar sesión
                   </button>
                 </>
