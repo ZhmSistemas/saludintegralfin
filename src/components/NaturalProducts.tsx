@@ -10,6 +10,7 @@ import {
   Star
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import dbConnect from '@/lib/dbConnect';
 import ProductModel from '@/lib/models/ProductModel';
 import type { Product } from '@/lib/models/ProductModel';
@@ -32,7 +33,7 @@ const icons = [
 
 const NaturalProducts = async () => {
   await dbConnect();
-  const products: Product[] = await ProductModel.find({}).sort({ createdAt: -1 });
+  const products: Product[] = await ProductModel.find({}).sort({ createdAt: -1 }).limit(6);
 
   return (
     <div className="min-h-screen bg-black">
@@ -160,6 +161,18 @@ const NaturalProducts = async () => {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {products.length > 0 && (
+            <div className="text-center mt-12">
+              <Link
+                href="/productos"
+                className="inline-flex items-center gap-2 px-8 py-3 rounded-lg font-semibold text-green-400 border border-green-500/50 hover:bg-green-500/10 hover:shadow-lg hover:shadow-green-500/20 transition-all duration-300"
+              >
+                Ver todo el catálogo
+                <ChevronRight className="w-5 h-5" />
+              </Link>
             </div>
           )}
         </div>
