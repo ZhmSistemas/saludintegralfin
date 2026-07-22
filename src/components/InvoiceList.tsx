@@ -52,6 +52,8 @@ export default function InvoiceList() {
   const [expandedInvoice, setExpandedInvoice] = useState<string | null>(null);
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState<"number" | "date">("number");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
@@ -60,15 +62,33 @@ export default function InvoiceList() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const filteredInvoices = invoices.filter((invoice) => {
-    if (!searchTerm.trim()) return true;
+  const toggleSort = (field: "number" | "date") => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  };
 
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      invoice.customerName.toLowerCase().includes(searchLower) ||
-      invoice.invoiceNumber.toLowerCase().includes(searchLower)
-    );
-  });
+  const filteredInvoices = invoices
+    .filter((invoice) => {
+      if (!searchTerm.trim()) return true;
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        invoice.customerName.toLowerCase().includes(searchLower) ||
+        invoice.invoiceNumber.toLowerCase().includes(searchLower)
+      );
+    })
+    .sort((a, b) => {
+      if (sortField === "number") {
+        const diff = Number(a.invoiceNumber) - Number(b.invoiceNumber);
+        return sortOrder === "asc" ? diff : -diff;
+      } else {
+        const diff = new Date(a.invoiceDate || a.createdAt).getTime() - new Date(b.invoiceDate || b.createdAt).getTime();
+        return sortOrder === "asc" ? diff : -diff;
+      }
+    });
 
   const formatPrice = (amount: number) => {
     const rounded = Math.round(amount);
@@ -275,6 +295,35 @@ export default function InvoiceList() {
               }`}
             >
               Pagadas
+            </button>
+          </div>
+          <div className="flex gap-2 items-center">
+            <span className="text-sm text-gray-500 whitespace-nowrap">Ordenar:</span>
+            <button
+              onClick={() => toggleSort("number")}
+              className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex items-center gap-1 ${
+                sortField === "number"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Factura
+              {sortField === "number" && (
+                <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+              )}
+            </button>
+            <button
+              onClick={() => toggleSort("date")}
+              className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex items-center gap-1 ${
+                sortField === "date"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Fecha
+              {sortField === "date" && (
+                <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+              )}
             </button>
           </div>
         </div>

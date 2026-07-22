@@ -49,6 +49,9 @@ export default function ListaFacturas() {
   const [loading, setLoading] = useState(true);
   const [expandedInvoice, setExpandedInvoice] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortField, setSortField] = useState<"number" | "date">("number");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   const formatPrice = (amount: number) => {
     const rounded = Math.round(amount);
@@ -133,6 +136,30 @@ export default function ListaFacturas() {
     }
   };
 
+  const toggleSort = (field: "number" | "date") => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
+    }
+  };
+
+  const filteredInvoices = invoices
+    .filter((invoice) => {
+      if (statusFilter === "all") return true;
+      return invoice.status === statusFilter;
+    })
+    .sort((a, b) => {
+      if (sortField === "number") {
+        const diff = Number(a.invoiceNumber) - Number(b.invoiceNumber);
+        return sortOrder === "asc" ? diff : -diff;
+      } else {
+        const diff = new Date(a.invoiceDate || a.createdAt).getTime() - new Date(b.invoiceDate || b.createdAt).getTime();
+        return sortOrder === "asc" ? diff : -diff;
+      }
+    });
+
   if (loading) {
     return (
       <div className="flex justify-center p-8">
@@ -149,61 +176,137 @@ export default function ListaFacturas() {
       </div>
 
       {invoices.length > 0 && (
+        <div className="mb-4 flex flex-col gap-3">
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            <button
+              onClick={() => setStatusFilter("all")}
+              className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex-shrink-0 ${
+                statusFilter === "all"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Todas
+            </button>
+            <button
+              onClick={() => setStatusFilter("pending")}
+              className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex-shrink-0 ${
+                statusFilter === "pending"
+                  ? "bg-red-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Pendientes
+            </button>
+            <button
+              onClick={() => setStatusFilter("partial")}
+              className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex-shrink-0 ${
+                statusFilter === "partial"
+                  ? "bg-yellow-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Abonadas
+            </button>
+            <button
+              onClick={() => setStatusFilter("paid")}
+              className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex-shrink-0 ${
+                statusFilter === "paid"
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Pagadas
+            </button>
+          </div>
+          <div className="flex gap-2 items-center">
+            <span className="text-sm text-gray-500 whitespace-nowrap">Ordenar:</span>
+            <button
+              onClick={() => toggleSort("number")}
+              className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex items-center gap-1 ${
+                sortField === "number"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Factura
+              {sortField === "number" && (
+                <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+              )}
+            </button>
+            <button
+              onClick={() => toggleSort("date")}
+              className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex items-center gap-1 ${
+                sortField === "date"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              Fecha
+              {sortField === "date" && (
+                <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {filteredInvoices.length > 0 && (
         <div className="mb-6 grid w-full grid-cols-2 gap-3 md:grid-cols-4">
           <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-center">
             <p className="text-xs font-medium text-indigo-600 uppercase">Todas</p>
             <p className="text-lg font-bold text-indigo-700">
-              {formatPrice(invoices.reduce((sum, inv) => sum + inv.total, 0))}
+              {formatPrice(filteredInvoices.reduce((sum, inv) => sum + inv.total, 0))}
             </p>
             <p className="mt-1 text-xs text-indigo-500">
-              {invoices.length} factura{invoices.length !== 1 ? "s" : ""}
+              {filteredInvoices.length} factura{filteredInvoices.length !== 1 ? "s" : ""}
             </p>
           </div>
           <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-center">
             <p className="text-xs font-medium text-red-600 uppercase">Pendiente</p>
             <p className="text-lg font-bold text-red-700">
-              {formatPrice(invoices.reduce((sum, inv) => sum + inv.balance, 0))}
+              {formatPrice(filteredInvoices.reduce((sum, inv) => sum + inv.balance, 0))}
             </p>
             <p className="mt-1 text-xs text-red-500">
-              {invoices.filter((inv) => inv.balance > 0).length} factura{invoices.filter((inv) => inv.balance > 0).length !== 1 ? "s" : ""}
+              {filteredInvoices.filter((inv) => inv.balance > 0).length} factura{filteredInvoices.filter((inv) => inv.balance > 0).length !== 1 ? "s" : ""}
             </p>
           </div>
           <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-center">
             <p className="text-xs font-medium text-yellow-600 uppercase">Abonos</p>
             <p className="text-lg font-bold text-yellow-700">
               {formatPrice(
-                invoices
+                filteredInvoices
                   .filter((inv) => inv.status === "partial")
                   .reduce((sum, inv) => sum + inv.paidAmount, 0),
               )}
             </p>
             <p className="mt-1 text-xs text-yellow-500">
-              {invoices.filter((inv) => inv.status === "partial").length} factura{invoices.filter((inv) => inv.status === "partial").length !== 1 ? "s" : ""}
+              {filteredInvoices.filter((inv) => inv.status === "partial").length} factura{filteredInvoices.filter((inv) => inv.status === "partial").length !== 1 ? "s" : ""}
             </p>
           </div>
           <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center">
             <p className="text-xs font-medium text-green-600 uppercase">Pagada</p>
             <p className="text-lg font-bold text-green-700">
               {formatPrice(
-                invoices
+                filteredInvoices
                   .filter((inv) => inv.status === "paid")
                   .reduce((sum, inv) => sum + inv.total, 0),
               )}
             </p>
             <p className="mt-1 text-xs text-green-500">
-              {invoices.filter((inv) => inv.status === "paid").length} factura{invoices.filter((inv) => inv.status === "paid").length !== 1 ? "s" : ""}
+              {filteredInvoices.filter((inv) => inv.status === "paid").length} factura{filteredInvoices.filter((inv) => inv.status === "paid").length !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
       )}
 
-      {invoices.length === 0 ? (
+      {filteredInvoices.length === 0 ? (
         <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-500">
           No tienes facturas registradas
         </div>
       ) : (
         <div className="space-y-2 w-full">
-          {invoices.map((invoice) => (
+          {filteredInvoices.map((invoice) => (
             <div
               key={invoice._id}
               className={`rounded-lg border shadow-sm transition-all duration-200 ${
