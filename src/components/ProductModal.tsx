@@ -25,15 +25,15 @@ const ProductModal = ({ product, onClose }: ProductModalProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-2xl bg-gray-950 border border-green-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-green-500/10"
+        className="relative w-full max-w-2xl my-8 bg-gray-950 border border-green-500/30 rounded-3xl overflow-y-auto shadow-2xl shadow-green-500/10 max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
