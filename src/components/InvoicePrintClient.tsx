@@ -307,20 +307,36 @@ export default function InvoicePrintClient() {
     if (invoices.length === 0) return;
     setIsDownloading(true);
     try {
-      for (let i = 0; i < invoices.length; i++) {
-        const element = createInvoiceElement(invoices[i]);
-        await html2pdf()
-          .set({
-            margin: [10, 10, 10, 10],
-            filename: `Factura_${invoices[i].invoiceNumber}.pdf`,
-            image: { type: "jpeg", quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
-          } as any)
-          .from(element)
-          .save();
-      }
-      showToast.success(`${invoices.length} factura${invoices.length !== 1 ? "s" : ""} descargada${invoices.length !== 1 ? "s" : ""}`);
+      const combined = document.createElement("div");
+      combined.style.fontFamily = "Arial, sans-serif";
+      combined.style.fontSize = "13px";
+      combined.style.color = "#1a1a1a";
+      combined.style.padding = "15px";
+
+      invoices.forEach((inv, idx) => {
+        const el = createInvoiceElement(inv);
+        const inner = el.firstElementChild || el;
+        combined.appendChild(inner);
+        if (idx < invoices.length - 1) {
+          const hr = document.createElement("div");
+          hr.style.pageBreakAfter = "always";
+          hr.style.borderTop = "2px dashed #ccc";
+          hr.style.margin = "20px 0";
+          combined.appendChild(hr);
+        }
+      });
+
+      await html2pdf()
+        .set({
+          margin: [10, 10, 10, 10],
+          filename: `Facturas_${selectedClient?.establishmentName || "Cliente"}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
+        } as any)
+        .from(combined)
+        .save();
+      showToast.success(`${invoices.length} factura${invoices.length !== 1 ? "s" : ""} descargada${invoices.length !== 1 ? "s" : ""} en un solo PDF`);
     } catch {
       showToast.error("Error al descargar las facturas");
     } finally {
