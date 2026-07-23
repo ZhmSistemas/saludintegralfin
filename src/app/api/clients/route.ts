@@ -5,7 +5,7 @@ import ClientModel from '@/lib/models/ClientModel'
 export const GET = async (request: NextRequest) => {
   try {
     await dbConnect()
-    const clients = await ClientModel.find({}).sort({ createdAt: -1 })
+    const clients = await ClientModel.find({}).sort({ establishmentName: 1 })
     return Response.json(clients, { status: 200 })
   } catch (err: unknown) {
     const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
