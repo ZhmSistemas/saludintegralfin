@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Leaf, Package } from 'lucide-react';
 import dbConnect from '@/lib/dbConnect';
 import ProductModel from '@/lib/models/ProductModel';
@@ -64,9 +65,10 @@ const ProductosPage = async () => {
                 const palette = colorPalette[index % colorPalette.length];
 
                 return (
-                  <div
+                  <Link
                     key={product._id}
-                    className={`group relative rounded-2xl ${palette.bgColor} ${palette.borderColor} border overflow-hidden hover:shadow-xl transition-all duration-500`}
+                    href={`/productos/${product._id}`}
+                    className={`group relative rounded-2xl ${palette.bgColor} ${palette.borderColor} border overflow-hidden hover:shadow-xl transition-all duration-500 block`}
                   >
                     {/* Image */}
                     <div className="relative h-52 overflow-hidden">
@@ -109,7 +111,7 @@ const ProductosPage = async () => {
                         )}
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
