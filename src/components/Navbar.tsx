@@ -23,8 +23,8 @@ const Navbar: React.FC = () => {
               <Image
                 src="https://res.cloudinary.com/dahpsctzy/image/upload/v1784775353/logo_salud_integral_wsty8q.webp"
                 alt="Salud Integral"
-                width={120}
-                height={40}
+                width={100}
+                height={30}
                 className="h-10 w-auto"
                 priority
               />
