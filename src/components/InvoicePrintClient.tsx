@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { showToast } from "nextjs-toast-notify";
-import { Search, Printer, FileText, Loader2 } from "lucide-react";
+import { Search, Printer, FileText, Loader2, Download } from "lucide-react";
+import html2pdf from "html2pdf.js";
 import InvoicePrintView from "./InvoicePrintView";
 
 type InvoiceItem = {
@@ -90,6 +91,7 @@ export default function InvoicePrintClient() {
   const [loadingInvoices, setLoadingInvoices] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -199,6 +201,131 @@ export default function InvoicePrintClient() {
       printWindow.print();
       printWindow.close();
     }, 500);
+  };
+
+  const createInvoiceElement = (invoice: Invoice) => {
+    const getStatusText = (status: string) => {
+      switch (status) {
+        case "paid": return "PAGADA";
+        case "partial": return "ABONADA";
+        default: return "PENDIENTE";
+      }
+    };
+    const getMethodName = (method: string) => {
+      switch (method) {
+        case "card": return "Tarjeta";
+        case "transfer": return "Transferencia";
+        default: return "Efectivo";
+      }
+    };
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+      <div style="font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; padding: 15px;">
+        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
+          <h1 style="font-size: 20px; margin-bottom: 2px;">Salud Integral</h1>
+          <p style="font-size: 11px; color: #555;">Sistema de Facturación</p>
+        </div>
+        <div style="text-align: center; font-size: 16px; font-weight: bold; margin: 10px 0; padding: 5px; border: 1px solid #ccc; background: #f9f9f9;">
+          FACTURA #${invoice.invoiceNumber}
+          <span style="margin-left: 10px; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; ${
+            invoice.status === "paid" ? "background: #dcfce7; color: #166534;" :
+            invoice.status === "partial" ? "background: #fef3c7; color: #92400e;" :
+            "background: #fee2e2; color: #991b1b;"
+          }">${getStatusText(invoice.status)}</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+          <div style="border: 1px solid #ddd; padding: 8px; border-radius: 4px;">
+            <h3 style="font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 3px;">Cliente</h3>
+            <p style="font-size: 12px; line-height: 1.5;"><strong>${invoice.customerName}</strong></p>
+            ${invoice.clientWhatsapp ? `<p style="font-size: 12px;">WhatsApp: ${invoice.clientWhatsapp}</p>` : ""}
+          </div>
+          <div style="border: 1px solid #ddd; padding: 8px; border-radius: 4px;">
+            <h3 style="font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 3px;">Detalles</h3>
+            <p style="font-size: 12px;">Fecha: ${formatDate(invoice.invoiceDate || invoice.createdAt)}</p>
+            <p style="font-size: 12px;">Factura #: ${invoice.invoiceNumber}</p>
+          </div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+          <thead>
+            <tr>
+              <th style="background: #333; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; text-transform: uppercase;">Producto</th>
+              <th style="background: #333; color: #fff; padding: 6px 8px; text-align: center; font-size: 11px; text-transform: uppercase;">Cant.</th>
+              <th style="background: #333; color: #fff; padding: 6px 8px; text-align: right; font-size: 11px; text-transform: uppercase;">Precio</th>
+              <th style="background: #333; color: #fff; padding: 6px 8px; text-align: right; font-size: 11px; text-transform: uppercase;">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${invoice.items.map((item, i) => `
+              <tr style="${i % 2 === 1 ? "background: #f5f5f5;" : ""}">
+                <td style="padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px;">${item.productName}</td>
+                <td style="padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px; text-align: center;">${item.quantity}</td>
+                <td style="padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px; text-align: right;">${formatPrice(item.price)}</td>
+                <td style="padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px; text-align: right;">${formatPrice(item.subtotal)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 15px;">
+          <div style="width: 280px; border: 1px solid #ddd;">
+            <div style="display: flex; justify-content: space-between; padding: 4px 10px; font-size: 12px;"><span style="flex: 1;">Subtotal</span><span style="font-weight: 600;">${formatPrice(invoice.subtotal)}</span></div>
+            ${invoice.discount > 0 ? `<div style="display: flex; justify-content: space-between; padding: 4px 10px; font-size: 12px;"><span style="flex: 1;">Descuento</span><span style="font-weight: 600; color: #dc2626;">-${formatPrice(invoice.discount)}</span></div>` : ""}
+            <div style="display: flex; justify-content: space-between; padding: 4px 10px; font-size: 14px; font-weight: bold; background: #333; color: #fff;"><span style="flex: 1;">Total</span><span>${formatPrice(invoice.total)}</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 4px 10px; font-size: 12px;"><span style="flex: 1;">Abonado</span><span style="font-weight: 600; color: #16a34a;">${formatPrice(invoice.paidAmount)}</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 4px 10px; font-size: 12px; font-weight: bold; ${invoice.balance <= 0 ? "background: #dcfce7; color: #166534;" : "background: #fee2e2; color: #991b1b;"}"><span style="flex: 1;">Saldo</span><span>${formatPrice(invoice.balance)}</span></div>
+          </div>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <h3 style="font-size: 12px; text-transform: uppercase; color: #666; margin-bottom: 5px; border-bottom: 1px solid #ddd; padding-bottom: 3px;">Historial de Pagos</h3>
+          ${invoice.payments.length === 0 ? '<p style="color: #999; font-style: italic; font-size: 12px;">Sin pagos registrados</p>' : `
+            <table style="width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr>
+                  <th style="background: #333; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; text-transform: uppercase;">Fecha</th>
+                  <th style="background: #333; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; text-transform: uppercase;">Método</th>
+                  <th style="background: #333; color: #fff; padding: 6px 8px; text-align: right; font-size: 11px; text-transform: uppercase;">Monto</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${invoice.payments.map((p, i) => `
+                  <tr style="${i % 2 === 1 ? "background: #f5f5f5;" : ""}">
+                    <td style="padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px;">${formatDate(p.date)}</td>
+                    <td style="padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px;">${getMethodName(p.method)}</td>
+                    <td style="padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px; text-align: right;">${formatPrice(p.amount)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          `}
+        </div>
+      </div>
+    `;
+    return wrapper;
+  };
+
+  const handleDownloadAllPDF = async () => {
+    if (invoices.length === 0) return;
+    setIsDownloading(true);
+    try {
+      for (let i = 0; i < invoices.length; i++) {
+        const element = createInvoiceElement(invoices[i]);
+        await html2pdf()
+          .set({
+            margin: [10, 10, 10, 10],
+            filename: `Factura_${invoices[i].invoiceNumber}.pdf`,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
+          } as any)
+          .from(element)
+          .save();
+      }
+      showToast.success(`${invoices.length} factura${invoices.length !== 1 ? "s" : ""} descargada${invoices.length !== 1 ? "s" : ""}`);
+    } catch {
+      showToast.error("Error al descargar las facturas");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const generateInvoiceHTML = (invoice: Invoice) => {
@@ -387,13 +514,27 @@ export default function InvoicePrintClient() {
               </p>
             </div>
             {invoices.length > 0 && (
-              <button
-                onClick={handlePrintAll}
-                className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-              >
-                <Printer className="h-4 w-4" />
-                Imprimir Todas
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDownloadAllPDF}
+                  disabled={isDownloading}
+                  className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-70"
+                >
+                  {isDownloading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  {isDownloading ? "Descargando..." : "Descargar Todas PDF"}
+                </button>
+                <button
+                  onClick={handlePrintAll}
+                  className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                >
+                  <Printer className="h-4 w-4" />
+                  Imprimir Todas
+                </button>
+              </div>
             )}
           </div>
 
@@ -439,6 +580,13 @@ export default function InvoicePrintClient() {
                   </div>
                   <div className="flex items-center gap-3 pl-14 sm:pl-0">
                     {getStatusBadge(invoice.status)}
+                    <button
+                      onClick={() => setSelectedInvoice(invoice)}
+                      className="flex items-center gap-2 rounded-md border border-green-300 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100"
+                    >
+                      <Download className="h-4 w-4" />
+                      PDF
+                    </button>
                     <button
                       onClick={() => setSelectedInvoice(invoice)}
                       className="flex items-center gap-2 rounded-md border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100"

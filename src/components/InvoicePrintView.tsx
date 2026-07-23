@@ -1,6 +1,8 @@
 "use client";
 
-import { Printer, X } from "lucide-react";
+import { useState } from "react";
+import { Printer, X, Download, Loader2 } from "lucide-react";
+import html2pdf from "html2pdf.js";
 
 type InvoiceItem = {
   productId: string;
@@ -75,6 +77,44 @@ const getStatusText = (status: string) => {
 };
 
 export default function InvoicePrintView({ invoice, onClose }: Props) {
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const getInvoiceHTMLContent = () => {
+    const printContent = document.getElementById("print-invoice-content");
+    if (!printContent) return null;
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+      <div style="font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; padding: 15px;">
+        ${printContent.innerHTML}
+      </div>
+    `;
+    return wrapper;
+  };
+
+  const handleDownloadPDF = async () => {
+    const element = getInvoiceHTMLContent();
+    if (!element) return;
+
+    setIsDownloading(true);
+    try {
+      await html2pdf()
+        .set({
+          margin: [10, 10, 10, 10],
+          filename: `Factura_${invoice.invoiceNumber}.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
+        } as any)
+        .from(element)
+        .save();
+    } catch {
+      // error silencioso
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handlePrint = () => {
     const printContent = document.getElementById("print-invoice-content");
     if (!printContent) return;
@@ -148,6 +188,18 @@ export default function InvoicePrintView({ invoice, onClose }: Props) {
             Factura #{invoice.invoiceNumber}
           </h2>
           <div className="flex gap-2">
+            <button
+              onClick={handleDownloadPDF}
+              disabled={isDownloading}
+              className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-70"
+            >
+              {isDownloading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
+              {isDownloading ? "Generando..." : "Descargar PDF"}
+            </button>
             <button
               onClick={handlePrint}
               className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
