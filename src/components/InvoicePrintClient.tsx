@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { showToast } from "nextjs-toast-notify";
-import { Search, Printer, FileText, Loader2, Download } from "lucide-react";
+import { Search, Printer, FileText, Loader2, Download, Table } from "lucide-react";
 import html2pdf from "html2pdf.js";
 import InvoicePrintView from "./InvoicePrintView";
 
@@ -83,6 +83,30 @@ const getStatusBadge = (status: string) => {
   }
 };
 
+const getStatusText = (status: string) => {
+  switch (status) {
+    case "paid": return "PAGADA";
+    case "partial": return "ABONADA";
+    default: return "PENDIENTE";
+  }
+};
+
+const getStatusLabel = (status: string) => {
+  switch (status) {
+    case "paid": return "Pagada";
+    case "partial": return "Abonada";
+    default: return "Pendiente";
+  }
+};
+
+const getMethodName = (method: string) => {
+  switch (method) {
+    case "card": return "Tarjeta";
+    case "transfer": return "Transferencia";
+    default: return "Efectivo";
+  }
+};
+
 export default function InvoicePrintClient() {
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
@@ -92,6 +116,8 @@ export default function InvoicePrintClient() {
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending_partial" | "paid">("all");
+  const [summaryMode, setSummaryMode] = useState(false);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -119,6 +145,12 @@ export default function InvoicePrintClient() {
     );
   });
 
+  const visibleInvoices = invoices.filter((inv) => {
+    if (statusFilter === "paid") return inv.status === "paid";
+    if (statusFilter === "pending_partial") return inv.status === "pending" || inv.status === "partial";
+    return true;
+  });
+
   const handleSelectClient = async (client: Client) => {
     setSelectedClient(client);
     setInvoices([]);
@@ -138,87 +170,7 @@ export default function InvoicePrintClient() {
     }
   };
 
-  const handlePrintAll = () => {
-    if (invoices.length === 0) return;
-
-    const printContent = invoices.map((inv) => generateInvoiceHTML(inv)).join("<hr style='page-break-after:always; margin: 20px 0; border:none; border-top:2px dashed #ccc;'>");
-
-    const printWindow = window.open("", "_blank", "width=800,height=600");
-    if (!printWindow) return;
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-        <meta charset="UTF-8">
-        <title>Facturas de ${selectedClient?.establishmentName}</title>
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; padding: 20px; }
-          .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
-          .header h1 { font-size: 20px; margin-bottom: 2px; }
-          .header p { font-size: 11px; color: #555; }
-          .invoice-title { text-align: center; font-size: 16px; font-weight: bold; margin: 10px 0; padding: 5px; border: 1px solid #ccc; background: #f9f9f9; }
-          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-          .info-box { border: 1px solid #ddd; padding: 8px; border-radius: 4px; }
-          .info-box h3 { font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 3px; }
-          .info-box p { font-size: 12px; line-height: 1.5; }
-          table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-          th { background: #333; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; text-transform: uppercase; }
-          td { padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px; }
-          tr:nth-child(even) { background: #f5f5f5; }
-          .totals { display: flex; justify-content: flex-end; margin-bottom: 15px; }
-          .totals-box { width: 280px; border: 1px solid #ddd; }
-          .totals-row { display: flex; justify-content: space-between; padding: 4px 10px; font-size: 12px; }
-          .totals-row.total { background: #333; color: #fff; font-weight: bold; font-size: 14px; }
-          .totals-row.balance { background: #fee2e2; color: #991b1b; font-weight: bold; }
-          .totals-row.balance.paid { background: #dcfce7; color: #166534; }
-          .totals-row .label { flex: 1; }
-          .totals-row .value { font-weight: 600; }
-          .payments { margin-bottom: 15px; }
-          .payments h3 { font-size: 12px; text-transform: uppercase; color: #666; margin-bottom: 5px; border-bottom: 1px solid #ddd; padding-bottom: 3px; }
-          .no-payments { color: #999; font-style: italic; font-size: 12px; }
-          .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
-          .status-pending { background: #fee2e2; color: #991b1b; }
-          .status-partial { background: #fef3c7; color: #92400e; }
-          .status-paid { background: #dcfce7; color: #166534; }
-          .footer { text-align: center; border-top: 1px solid #ccc; padding-top: 10px; margin-top: 20px; font-size: 10px; color: #999; }
-          @media print { body { padding: 0; } }
-        </style>
-      </head>
-      <body>
-        ${printContent}
-        <div class="footer">
-          <p>Documento generado desde Salud Integral</p>
-        </div>
-      </body>
-      </html>
-    `);
-
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
-  };
-
   const createInvoiceElement = (invoice: Invoice) => {
-    const getStatusText = (status: string) => {
-      switch (status) {
-        case "paid": return "PAGADA";
-        case "partial": return "ABONADA";
-        default: return "PENDIENTE";
-      }
-    };
-    const getMethodName = (method: string) => {
-      switch (method) {
-        case "card": return "Tarjeta";
-        case "transfer": return "Transferencia";
-        default: return "Efectivo";
-      }
-    };
-
     const wrapper = document.createElement("div");
     wrapper.innerHTML = `
       <div style="font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; padding: 15px;">
@@ -303,64 +255,235 @@ export default function InvoicePrintClient() {
     return wrapper;
   };
 
+  const createSummaryElement = (clientInvoices: Invoice[], clientName: string) => {
+    const totalGeneral = clientInvoices.reduce((sum, inv) => sum + inv.total, 0);
+    const totalAbonado = clientInvoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
+    const totalSaldo = clientInvoices.reduce((sum, inv) => sum + inv.balance, 0);
+
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = `
+      <div style="font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; padding: 20px;">
+        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px;">
+          <h1 style="font-size: 20px; margin-bottom: 2px;">Salud Integral</h1>
+          <p style="font-size: 11px; color: #555;">Resumen de Facturación</p>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <h2 style="font-size: 15px; font-weight: bold; margin-bottom: 4px;">Cliente: ${clientName}</h2>
+          <p style="font-size: 12px; color: #666;">${clientInvoices.length} factura${clientInvoices.length !== 1 ? "s" : ""} · ${statusFilter === "all" ? "Todos los estados" : statusFilter === "paid" ? "Solo pagadas" : "Pendientes y abonadas"}</p>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <thead>
+            <tr>
+              <th style="background: #333; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; text-transform: uppercase;"># Factura</th>
+              <th style="background: #333; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; text-transform: uppercase;">Fecha</th>
+              <th style="background: #333; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; text-transform: uppercase;">Estado</th>
+              <th style="background: #333; color: #fff; padding: 6px 8px; text-align: right; font-size: 11px; text-transform: uppercase;">Total</th>
+              <th style="background: #333; color: #fff; padding: 6px 8px; text-align: right; font-size: 11px; text-transform: uppercase;">Abonado</th>
+              <th style="background: #333; color: #fff; padding: 6px 8px; text-align: right; font-size: 11px; text-transform: uppercase;">Saldo</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${clientInvoices.map((inv, i) => `
+              <tr style="${i % 2 === 1 ? "background: #f5f5f5;" : ""}">
+                <td style="padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 12px; font-weight: bold;">${inv.invoiceNumber}</td>
+                <td style="padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 12px;">${formatDate(inv.invoiceDate || inv.createdAt)}</td>
+                <td style="padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 12px;">
+                  <span style="display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; ${
+                    inv.status === "paid" ? "background: #dcfce7; color: #166534;" :
+                    inv.status === "partial" ? "background: #fef3c7; color: #92400e;" :
+                    "background: #fee2e2; color: #991b1b;"
+                  }">${getStatusLabel(inv.status)}</span>
+                </td>
+                <td style="padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 12px; text-align: right; font-weight: 600;">${formatPrice(inv.total)}</td>
+                <td style="padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 12px; text-align: right; color: #16a34a;">${formatPrice(inv.paidAmount)}</td>
+                <td style="padding: 6px 8px; border-bottom: 1px solid #ddd; font-size: 12px; text-align: right; font-weight: bold; ${inv.balance > 0 ? "color: #dc2626;" : "color: #166534;"}">${formatPrice(inv.balance)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+          <tfoot>
+            <tr style="background: #333; color: #fff; font-weight: bold;">
+              <td colspan="3" style="padding: 8px; font-size: 12px;">TOTALES</td>
+              <td style="padding: 8px; font-size: 12px; text-align: right;">${formatPrice(totalGeneral)}</td>
+              <td style="padding: 8px; font-size: 12px; text-align: right;">${formatPrice(totalAbonado)}</td>
+              <td style="padding: 8px; font-size: 12px; text-align: right;">${formatPrice(totalSaldo)}</td>
+            </tr>
+          </tfoot>
+        </table>
+        <div style="text-align: center; border-top: 1px solid #ccc; padding-top: 10px; font-size: 10px; color: #999;">
+          <p>Documento generado desde Salud Integral</p>
+        </div>
+      </div>
+    `;
+    return wrapper;
+  };
+
   const handleDownloadAllPDF = async () => {
-    if (invoices.length === 0) return;
+    if (visibleInvoices.length === 0) return;
     setIsDownloading(true);
     try {
-      const combined = document.createElement("div");
-      combined.style.fontFamily = "Arial, sans-serif";
-      combined.style.fontSize = "13px";
-      combined.style.color = "#1a1a1a";
-      combined.style.padding = "15px";
+      let element: HTMLElement;
 
-      invoices.forEach((inv, idx) => {
-        const el = createInvoiceElement(inv);
-        const inner = el.firstElementChild || el;
-        combined.appendChild(inner);
-        if (idx < invoices.length - 1) {
-          const hr = document.createElement("div");
-          hr.style.pageBreakAfter = "always";
-          hr.style.borderTop = "2px dashed #ccc";
-          hr.style.margin = "20px 0";
-          combined.appendChild(hr);
-        }
-      });
+      if (summaryMode) {
+        element = createSummaryElement(visibleInvoices, selectedClient?.establishmentName || "Cliente");
+      } else {
+        const combined = document.createElement("div");
+        combined.style.fontFamily = "Arial, sans-serif";
+        combined.style.fontSize = "13px";
+        combined.style.color = "#1a1a1a";
+        combined.style.padding = "15px";
+
+        visibleInvoices.forEach((inv, idx) => {
+          const el = createInvoiceElement(inv);
+          const inner = el.firstElementChild || el;
+          combined.appendChild(inner);
+          if (idx < visibleInvoices.length - 1) {
+            const hr = document.createElement("div");
+            hr.style.pageBreakAfter = "always";
+            hr.style.borderTop = "2px dashed #ccc";
+            hr.style.margin = "20px 0";
+            combined.appendChild(hr);
+          }
+        });
+        element = combined;
+      }
+
+      const statusLabel = statusFilter === "all" ? "Todas" : statusFilter === "paid" ? "Pagadas" : "Pendientes";
+      const modeLabel = summaryMode ? "Resumen" : "Facturas";
 
       await html2pdf()
         .set({
           margin: [10, 10, 10, 10],
-          filename: `Facturas_${selectedClient?.establishmentName || "Cliente"}.pdf`,
+          filename: `${modeLabel}_${selectedClient?.establishmentName || "Cliente"}_${statusLabel}.pdf`,
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
         } as any)
-        .from(combined)
+        .from(element)
         .save();
-      showToast.success(`${invoices.length} factura${invoices.length !== 1 ? "s" : ""} descargada${invoices.length !== 1 ? "s" : ""} en un solo PDF`);
+      showToast.success(`PDF descargado exitosamente`);
     } catch {
-      showToast.error("Error al descargar las facturas");
+      showToast.error("Error al descargar el PDF");
     } finally {
       setIsDownloading(false);
     }
   };
 
+  const handlePrintAll = () => {
+    if (visibleInvoices.length === 0) return;
+
+    let printContent: string;
+    if (summaryMode) {
+      const totalGeneral = visibleInvoices.reduce((sum, inv) => sum + inv.total, 0);
+      const totalAbonado = visibleInvoices.reduce((sum, inv) => sum + inv.paidAmount, 0);
+      const totalSaldo = visibleInvoices.reduce((sum, inv) => sum + inv.balance, 0);
+
+      printContent = `
+        <div class="header">
+          <h1>Salud Integral</h1>
+          <p>Resumen de Facturación</p>
+        </div>
+        <div style="margin-bottom: 15px;">
+          <h2 style="font-size: 15px; font-weight: bold; margin-bottom: 4px;">Cliente: ${selectedClient?.establishmentName}</h2>
+          <p style="font-size: 12px; color: #666;">${visibleInvoices.length} factura${visibleInvoices.length !== 1 ? "s" : ""}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th># Factura</th>
+              <th>Fecha</th>
+              <th>Estado</th>
+              <th style="text-align:right">Total</th>
+              <th style="text-align:right">Abonado</th>
+              <th style="text-align:right">Saldo</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${visibleInvoices.map((inv) => `
+              <tr>
+                <td><strong>${inv.invoiceNumber}</strong></td>
+                <td>${formatDate(inv.invoiceDate || inv.createdAt)}</td>
+                <td><span class="status-badge status-${inv.status}">${getStatusLabel(inv.status)}</span></td>
+                <td style="text-align:right"><strong>${formatPrice(inv.total)}</strong></td>
+                <td style="text-align:right; color: #16a34a;">${formatPrice(inv.paidAmount)}</td>
+                <td style="text-align:right; ${inv.balance > 0 ? "color: #dc2626;" : "color: #166534;"}"><strong>${formatPrice(inv.balance)}</strong></td>
+              </tr>
+            `).join("")}
+          </tbody>
+          <tfoot>
+            <tr style="background: #333; color: #fff; font-weight: bold;">
+              <td colspan="3">TOTALES</td>
+              <td style="text-align:right">${formatPrice(totalGeneral)}</td>
+              <td style="text-align:right">${formatPrice(totalAbonado)}</td>
+              <td style="text-align:right">${formatPrice(totalSaldo)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      `;
+    } else {
+      printContent = visibleInvoices.map((inv) => generateInvoiceHTML(inv)).join("<hr style='page-break-after:always; margin: 20px 0; border:none; border-top:2px dashed #ccc;'>");
+    }
+
+    const printWindow = window.open("", "_blank", "width=800,height=600");
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <title>Facturas de ${selectedClient?.establishmentName}</title>
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { font-family: Arial, sans-serif; font-size: 13px; color: #1a1a1a; padding: 20px; }
+          .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+          .header h1 { font-size: 20px; margin-bottom: 2px; }
+          .header p { font-size: 11px; color: #555; }
+          .invoice-title { text-align: center; font-size: 16px; font-weight: bold; margin: 10px 0; padding: 5px; border: 1px solid #ccc; background: #f9f9f9; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+          .info-box { border: 1px solid #ddd; padding: 8px; border-radius: 4px; }
+          .info-box h3 { font-size: 11px; text-transform: uppercase; color: #666; margin-bottom: 4px; border-bottom: 1px solid #eee; padding-bottom: 3px; }
+          .info-box p { font-size: 12px; line-height: 1.5; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+          th { background: #333; color: #fff; padding: 6px 8px; text-align: left; font-size: 11px; text-transform: uppercase; }
+          td { padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px; }
+          tr:nth-child(even) { background: #f5f5f5; }
+          .totals { display: flex; justify-content: flex-end; margin-bottom: 15px; }
+          .totals-box { width: 280px; border: 1px solid #ddd; }
+          .totals-row { display: flex; justify-content: space-between; padding: 4px 10px; font-size: 12px; }
+          .totals-row.total { background: #333; color: #fff; font-weight: bold; font-size: 14px; }
+          .totals-row.balance { background: #fee2e2; color: #991b1b; font-weight: bold; }
+          .totals-row.balance.paid { background: #dcfce7; color: #166534; }
+          .totals-row .label { flex: 1; }
+          .totals-row .value { font-weight: 600; }
+          .payments { margin-bottom: 15px; }
+          .payments h3 { font-size: 12px; text-transform: uppercase; color: #666; margin-bottom: 5px; border-bottom: 1px solid #ddd; padding-bottom: 3px; }
+          .no-payments { color: #999; font-style: italic; font-size: 12px; }
+          .status-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+          .status-pending { background: #fee2e2; color: #991b1b; }
+          .status-partial { background: #fef3c7; color: #92400e; }
+          .status-paid { background: #dcfce7; color: #166534; }
+          .footer { text-align: center; border-top: 1px solid #ccc; padding-top: 10px; margin-top: 20px; font-size: 10px; color: #999; }
+          @media print { body { padding: 0; } }
+        </style>
+      </head>
+      <body>
+        ${printContent}
+        <div class="footer">
+          <p>Documento generado desde Salud Integral</p>
+        </div>
+      </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
+  };
+
   const generateInvoiceHTML = (invoice: Invoice) => {
-    const getStatusText = (status: string) => {
-      switch (status) {
-        case "paid": return "PAGADA";
-        case "partial": return "ABONADA";
-        default: return "PENDIENTE";
-      }
-    };
-
-    const getMethodName = (method: string) => {
-      switch (method) {
-        case "card": return "Tarjeta";
-        case "transfer": return "Transferencia";
-        default: return "Efectivo";
-      }
-    };
-
     return `
       <div style="margin-bottom: 30px;">
         <div class="header">
@@ -520,16 +643,16 @@ export default function InvoicePrintClient() {
       {/* Resultado: facturas del cliente seleccionado */}
       {selectedClient && (
         <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
                 {selectedClient.establishmentName}
               </h2>
               <p className="text-sm text-gray-500">
-                {invoices.length} factura{invoices.length !== 1 ? "s" : ""} encontrada{invoices.length !== 1 ? "s" : ""}
+                {visibleInvoices.length} factura{visibleInvoices.length !== 1 ? "s" : ""} encontrada{visibleInvoices.length !== 1 ? "s" : ""}
               </p>
             </div>
-            {invoices.length > 0 && (
+            {visibleInvoices.length > 0 && (
               <div className="flex gap-2">
                 <button
                   onClick={handleDownloadAllPDF}
@@ -541,18 +664,84 @@ export default function InvoicePrintClient() {
                   ) : (
                     <Download className="h-4 w-4" />
                   )}
-                  {isDownloading ? "Descargando..." : "Descargar Todas PDF"}
+                  {isDownloading ? "Descargando..." : "Descargar PDF"}
                 </button>
                 <button
                   onClick={handlePrintAll}
                   className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
                 >
                   <Printer className="h-4 w-4" />
-                  Imprimir Todas
+                  Imprimir
                 </button>
               </div>
             )}
           </div>
+
+          {/* Filtros de estado y modo */}
+          {invoices.length > 0 && (
+            <div className="mb-4 flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <span className="text-sm font-medium text-gray-600">Estado:</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setStatusFilter("all")}
+                    className={`rounded-md px-3 py-1 text-sm font-medium ${
+                      statusFilter === "all"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    Todas ({invoices.length})
+                  </button>
+                  <button
+                    onClick={() => setStatusFilter("pending_partial")}
+                    className={`rounded-md px-3 py-1 text-sm font-medium ${
+                      statusFilter === "pending_partial"
+                        ? "bg-yellow-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    Pendientes/Abonadas ({invoices.filter((i) => i.status === "pending" || i.status === "partial").length})
+                  </button>
+                  <button
+                    onClick={() => setStatusFilter("paid")}
+                    className={`rounded-md px-3 py-1 text-sm font-medium ${
+                      statusFilter === "paid"
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    Pagadas ({invoices.filter((i) => i.status === "paid").length})
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-gray-600">Formato:</span>
+                <button
+                  onClick={() => setSummaryMode(false)}
+                  className={`flex items-center gap-1 rounded-md px-3 py-1 text-sm font-medium ${
+                    !summaryMode
+                      ? "bg-indigo-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  Facturas completas
+                </button>
+                <button
+                  onClick={() => setSummaryMode(true)}
+                  className={`flex items-center gap-1 rounded-md px-3 py-1 text-sm font-medium ${
+                    summaryMode
+                      ? "bg-indigo-600 text-white"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                  }`}
+                >
+                  <Table className="h-3.5 w-3.5" />
+                  Resumen tabla
+                </button>
+              </div>
+            </div>
+          )}
 
           {loadingInvoices ? (
             <div className="flex items-center justify-center py-8">
@@ -561,16 +750,18 @@ export default function InvoicePrintClient() {
                 Cargando facturas...
               </span>
             </div>
-          ) : invoices.length === 0 ? (
+          ) : visibleInvoices.length === 0 ? (
             <div className="py-8 text-center">
               <FileText className="mx-auto h-10 w-10 text-gray-300" />
               <p className="mt-2 text-sm text-gray-500">
-                Este cliente no tiene facturas registradas
+                {invoices.length === 0
+                  ? "Este cliente no tiene facturas registradas"
+                  : "No hay facturas con el filtro seleccionado"}
               </p>
             </div>
           ) : (
             <div className="space-y-2">
-              {invoices.map((invoice) => (
+              {visibleInvoices.map((invoice) => (
                 <div
                   key={invoice._id}
                   className="flex flex-col gap-3 rounded-md border border-gray-200 p-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between"
