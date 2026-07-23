@@ -25,7 +25,7 @@ const Navbar: React.FC = () => {
                 alt="Salud Integral"
                 width={100}
                 height={30}
-                className="h-10 w-auto"
+                className="h-8 w-auto"
                 priority
               />
             </Link>
