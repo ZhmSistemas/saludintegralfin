@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 
-type MenuOption =  'creafactura' | 'muestrafactura' | 'creaproducto' | 'muestraproducto' | 'creacliente' | 'muestracliente' | 'usuarios' | null
+type MenuOption =  'creafactura' | 'muestrafactura' | 'imprimirfactura' | 'creaproducto' | 'muestraproducto' | 'creacliente' | 'muestracliente' | 'usuarios' | null
 
 interface Invoice {
   _id: string
@@ -36,6 +36,7 @@ export default function DashboardPage() {
   const menuItems = [    
     { id: 'creafactura' as MenuOption, label: 'Crear Factura', icon: '📄' },
     { id: 'muestrafactura' as MenuOption, label: 'Mostrar Factura', icon: '📋' },
+    { id: 'imprimirfactura' as MenuOption, label: 'Imprimir Facturas', icon: '🖨️' },
     { id: 'creaproducto' as MenuOption, label: 'Crear Productos', icon: '📦' },
     { id: 'muestraproducto' as MenuOption, label: 'Mostrar Productos', icon: '📦' },
     { id: 'creacliente' as MenuOption, label: 'Crear Cliente', icon: '👤' },
@@ -49,6 +50,8 @@ export default function DashboardPage() {
         return '/dashboard/facturas/creafactura'
       case 'muestrafactura':
         return '/dashboard/facturas/muestrafactura'
+      case 'imprimirfactura':
+        return '/dashboard/facturas/imprimirfactura'
       case 'creaproducto':
         return '/dashboard/productos/creaproducto'
       case 'muestraproducto':
@@ -86,6 +89,7 @@ export default function DashboardPage() {
   const getMenuOptionFromUrl = (url: string): MenuOption => {
     if (url.includes('/dashboard/facturas/creafactura')) return 'creafactura'
     if (url.includes('/dashboard/facturas/muestrafactura')) return 'muestrafactura'
+    if (url.includes('/dashboard/facturas/imprimirfactura')) return 'imprimirfactura'
     if (url.includes('/dashboard/productos/creaproducto')) return 'creaproducto'
     if (url.includes('/dashboard/productos/mostrarproductos')) return 'muestraproducto'
     if (url.includes('/dashboard/clientes/creacliente')) return 'creacliente'

@@ -10,9 +10,11 @@ import {
   AlertTriangle,
   Pencil,
   X,
+  Printer,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import InvoicePrintView from "./InvoicePrintView";
 
 type InvoiceItem = {
   productId: string;
@@ -61,6 +63,7 @@ export default function InvoiceList() {
   const [addingPayment, setAddingPayment] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedPrintInvoice, setSelectedPrintInvoice] = useState<Invoice | null>(null);
 
   const toggleSort = (field: "number" | "date") => {
     if (sortField === field) {
@@ -479,6 +482,16 @@ export default function InvoiceList() {
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedPrintInvoice(invoice);
+                      }}
+                      className="rounded-md p-1 text-indigo-600 hover:bg-indigo-50"
+                      title="Imprimir factura"
+                    >
+                      <Printer className="h-4 w-4" />
+                    </button>
+                    <button
                       onClick={(e) => confirmDelete(invoice._id, e)}
                       className="rounded-md p-1 text-red-600 hover:bg-red-50"
                       title="Eliminar factura"
@@ -731,6 +744,13 @@ export default function InvoiceList() {
             onClick={(e) => e.stopPropagation()}
           />
         </div>
+      )}
+
+      {selectedPrintInvoice && (
+        <InvoicePrintView
+          invoice={selectedPrintInvoice}
+          onClose={() => setSelectedPrintInvoice(null)}
+        />
       )}
     </div>
   );
