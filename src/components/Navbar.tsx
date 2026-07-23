@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { useSession, signOut } from "next-auth/react";
-import { LogOut, FileText } from "lucide-react";
+import { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useSession, signOut } from 'next-auth/react';
+import { LogOut, FileText } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,9 +16,12 @@ const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="hover:bg-blue-700 px-3 py-2 rounded-md flex items-center">
+            <Link
+              href="/"
+              className="hover:bg-blue-700 px-3 py-2 rounded-md flex items-center"
+            >
               <Image
-                src="https://res.cloudinary.com/dahpsctzy/image/upload/v1784773995/ChatGPT_Image_22_jul_2026_21_31_21_tlpcbt.png"
+                src="https://res.cloudinary.com/dahpsctzy/image/upload/v1784775353/logo_salud_integral_wsty8q.webp"
                 alt="Salud Integral"
                 width={120}
                 height={40}
@@ -29,45 +32,79 @@ const Navbar: React.FC = () => {
           </div>
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-4">
-              <Link href="/" className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">
+              <Link
+                href="/"
+                className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium"
+              >
                 Inicio
               </Link>
-              <Link href="/nosotros" className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">
+              <Link
+                href="/nosotros"
+                className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium"
+              >
                 Nosotros
               </Link>
-              <Link href="/productos" className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">
+              <Link
+                href="/productos"
+                className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium"
+              >
                 Productos
               </Link>
               {session ? (
                 <div className="relative">
-                  <button 
-                    onClick={() => setIsProfileOpen(!isProfileOpen)} 
+                  <button
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
                     className="flex items-center hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium focus:outline-none transition-colors"
                   >
                     {session.user?.name?.split(' ')[0]}
-                    <svg className={`ml-1 h-4 w-4 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                    <svg
+                      className={`ml-1 h-4 w-4 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
                     </svg>
                   </button>
-                  
+
                   {isProfileOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 ring-1 ring-black ring-opacity-5">
-                      <Link href="/usuario/perfil" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileOpen(false)}>
+                      <Link
+                        href="/usuario/perfil"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsProfileOpen(false)}
+                      >
                         Mi Perfil
                       </Link>
                       <div className="border-t border-gray-200"></div>
                       {session.user?.isAdmin ? (
-                        <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileOpen(false)}>
+                        <Link
+                          href="/dashboard"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsProfileOpen(false)}
+                        >
                           Dashboard
                         </Link>
                       ) : (
-                        <Link href="/usuario/facturas" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileOpen(false)}>
+                        <Link
+                          href="/usuario/facturas"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsProfileOpen(false)}
+                        >
                           Facturas
                         </Link>
                       )}
                       <div className="border-t border-gray-200"></div>
-                      <button 
-                        onClick={() => { setIsProfileOpen(false); signOut({ callbackUrl: '/auth/login' }); }} 
+                      <button
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          signOut({ callbackUrl: '/auth/login' });
+                        }}
                         className="w-full text-left block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center gap-2"
                       >
                         <LogOut className="h-4 w-4" />
@@ -77,7 +114,10 @@ const Navbar: React.FC = () => {
                   )}
                 </div>
               ) : (
-                <Link href="/auth/login" className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium">
+                <Link
+                  href="/auth/login"
+                  className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium"
+                >
                   Sesión
                 </Link>
               )}
@@ -138,7 +178,7 @@ const Navbar: React.FC = () => {
         >
           <div className="mx-4 w-full max-w-sm bg-blue-600/90 backdrop-blur-sm rounded-lg shadow-xl border border-white/20 overflow-hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-               {session ? (
+              {session ? (
                 <>
                   <div className="px-3 py-2 text-sm font-medium text-blue-200 border-b border-blue-500/30">
                     Hola, {session.user?.name?.split(' ')[0]}
@@ -152,17 +192,20 @@ const Navbar: React.FC = () => {
                       Dashboard
                     </Link>
                   ) : (
-                      <Link
-                        href="/usuario/facturas"
-                        className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white flex items-center gap-2"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        <FileText className="h-4 w-4" />
-                        Mis Facturas
-                      </Link>
+                    <Link
+                      href="/usuario/facturas"
+                      className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white flex items-center gap-2"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <FileText className="h-4 w-4" />
+                      Mis Facturas
+                    </Link>
                   )}
-                  <button 
-                    onClick={() => { setIsOpen(false); signOut({ callbackUrl: '/auth/login' }); }} 
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      signOut({ callbackUrl: '/auth/login' });
+                    }}
                     className="w-full text-left hover:bg-blue-700/50 px-3 py-2 rounded-md text-base font-medium text-red-300 flex items-center gap-2"
                   >
                     <LogOut className="h-4 w-4" />
@@ -179,27 +222,27 @@ const Navbar: React.FC = () => {
                 </Link>
               )}
             </div>
-              <Link
-                href="/"
-                className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                Inicio
-              </Link>
-              <Link
-                href="/nosotros"
-                className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                Nosotros
-              </Link>
-              <Link
-                href="/productos"
-                className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                Productos
-              </Link>             
+            <Link
+              href="/"
+              className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
+              onClick={() => setIsOpen(false)}
+            >
+              Inicio
+            </Link>
+            <Link
+              href="/nosotros"
+              className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
+              onClick={() => setIsOpen(false)}
+            >
+              Nosotros
+            </Link>
+            <Link
+              href="/productos"
+              className="hover:bg-blue-700/50 block px-3 py-2 rounded-md text-base font-medium text-white"
+              onClick={() => setIsOpen(false)}
+            >
+              Productos
+            </Link>
           </div>
         </div>
       )}

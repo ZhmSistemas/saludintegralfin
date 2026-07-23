@@ -2,7 +2,7 @@
 
 import React, { useEffect } from 'react';
 import Image from 'next/image';
-import { X, Leaf, Package, DollarSign, Box } from 'lucide-react';
+import { X, Leaf, Package, Box } from 'lucide-react';
 import type { Product } from '@/lib/models/ProductModel';
 
 interface ProductModalProps {
@@ -68,9 +68,6 @@ const ProductModal = ({ product, onClose }: ProductModalProps) => {
           </h2>
 
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-3xl font-black bg-clip-text text-transparent bg-linear-to-r from-green-400 to-emerald-400">
-              ${product.price.toFixed(2)}
-            </span>
             {product.stock > 0 ? (
               <span className="text-sm px-3 py-1 rounded-full bg-green-500/20 text-green-300 font-medium border border-green-500/30">
                 Disponible
@@ -93,16 +90,7 @@ const ProductModal = ({ product, onClose }: ProductModalProps) => {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
-              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-green-400" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">Precio</p>
-                <p className="text-sm font-bold text-white">${product.price.toFixed(2)}</p>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 gap-4 mb-8">
             <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10">
               <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
                 <Box className="w-5 h-5 text-green-400" />
