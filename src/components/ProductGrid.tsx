@@ -70,10 +70,7 @@ const ProductGrid = ({ products }: ProductGridProps) => {
                   </p>
                 )}
 
-                <div className="flex items-center justify-between mb-5">
-                  <span className={`text-2xl font-black bg-clip-text text-transparent bg-linear-to-r ${palette.color}`}>
-                    ${product.price.toFixed(2)}
-                  </span>
+                <div className="flex items-center justify-end mb-5">
                   {product.stock > 0 ? (
                     <span className="text-xs px-2 py-1 rounded-full bg-green-500/20 text-green-300 font-medium border border-green-500/30">
                       Disponible

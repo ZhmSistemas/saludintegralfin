@@ -101,10 +101,7 @@ const ProductosPage = async () => {
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between">
-                        <span className={`text-2xl font-black bg-clip-text text-transparent bg-linear-to-r ${palette.color}`}>
-                          ${product.price.toFixed(2)}
-                        </span>
+                      <div className="flex items-center justify-end">
                         {product.stock > 0 && (
                           <span className="text-xs px-3 py-1 rounded-full bg-green-500/20 text-green-300 font-medium border border-green-500/30">
                             En stock
