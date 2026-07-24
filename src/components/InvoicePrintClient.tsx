@@ -582,7 +582,7 @@ export default function InvoicePrintClient() {
   };
 
   return (
-    <div className="mx-auto w-full p-6 lg:w-5/6">
+    <div className="mx-auto w-full overflow-hidden p-4 sm:p-6 lg:w-5/6">
       <div className="my-6 flex flex-col items-center gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Imprimir Facturas</h1>
         <p className="text-sm text-gray-500">
@@ -644,8 +644,8 @@ export default function InvoicePrintClient() {
       {selectedClient && (
         <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900">
+            <div className="min-w-0">
+              <h2 className="truncate text-lg font-semibold text-gray-900">
                 {selectedClient.establishmentName}
               </h2>
               <p className="text-sm text-gray-500">
@@ -657,18 +657,18 @@ export default function InvoicePrintClient() {
                 <button
                   onClick={handleDownloadAllPDF}
                   disabled={isDownloading}
-                  className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-70"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-md bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-70 sm:flex-initial"
                 >
                   {isDownloading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <Download className="h-4 w-4" />
                   )}
-                  {isDownloading ? "Descargando..." : "Descargar PDF"}
+                  {isDownloading ? "Descargando..." : "PDF"}
                 </button>
                 <button
                   onClick={handlePrintAll}
-                  className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700 sm:flex-initial"
                 >
                   <Printer className="h-4 w-4" />
                   Imprimir
@@ -679,10 +679,10 @@ export default function InvoicePrintClient() {
 
           {/* Filtros de estado y modo */}
           {invoices.length > 0 && (
-            <div className="mb-4 flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="mb-4 flex flex-col gap-3 border-t border-gray-100 pt-4">
+              <div className="flex flex-col gap-2">
                 <span className="text-sm font-medium text-gray-600">Estado:</span>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setStatusFilter("all")}
                     className={`rounded-md px-3 py-1 text-sm font-medium ${
@@ -701,7 +701,7 @@ export default function InvoicePrintClient() {
                         : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                     }`}
                   >
-                    Pendientes/Abonadas ({invoices.filter((i) => i.status === "pending" || i.status === "partial").length})
+                    Pend./Abonadas ({invoices.filter((i) => i.status === "pending" || i.status === "partial").length})
                   </button>
                   <button
                     onClick={() => setStatusFilter("paid")}
@@ -715,30 +715,32 @@ export default function InvoicePrintClient() {
                   </button>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2">
                 <span className="text-sm font-medium text-gray-600">Formato:</span>
-                <button
-                  onClick={() => setSummaryMode(false)}
-                  className={`flex items-center gap-1 rounded-md px-3 py-1 text-sm font-medium ${
-                    !summaryMode
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  <FileText className="h-3.5 w-3.5" />
-                  Facturas completas
-                </button>
-                <button
-                  onClick={() => setSummaryMode(true)}
-                  className={`flex items-center gap-1 rounded-md px-3 py-1 text-sm font-medium ${
-                    summaryMode
-                      ? "bg-indigo-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                  }`}
-                >
-                  <Table className="h-3.5 w-3.5" />
-                  Resumen tabla
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSummaryMode(false)}
+                    className={`flex items-center gap-1 rounded-md px-3 py-1 text-sm font-medium ${
+                      !summaryMode
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    <FileText className="h-3.5 w-3.5" />
+                    Completas
+                  </button>
+                  <button
+                    onClick={() => setSummaryMode(true)}
+                    className={`flex items-center gap-1 rounded-md px-3 py-1 text-sm font-medium ${
+                      summaryMode
+                        ? "bg-indigo-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }`}
+                  >
+                    <Table className="h-3.5 w-3.5" />
+                    Resumen tabla
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -764,41 +766,41 @@ export default function InvoicePrintClient() {
               {visibleInvoices.map((invoice) => (
                 <div
                   key={invoice._id}
-                  className="flex flex-col gap-3 rounded-md border border-gray-200 p-4 transition-colors hover:bg-gray-50 sm:flex-row sm:items-center sm:justify-between"
+                  className="rounded-md border border-gray-200 p-4 transition-colors hover:bg-gray-50"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100">
                       <FileText className="h-5 w-5 text-indigo-600" />
                     </div>
-                    <div>
-                      <p className="font-semibold text-gray-900">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold text-gray-900">
                         Factura #{invoice.invoiceNumber}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="truncate text-sm text-gray-500">
                         {formatDate(invoice.invoiceDate || invoice.createdAt)} · Total:{" "}
                         {formatPrice(invoice.total)}
                         {invoice.balance > 0 && (
-                          <span className="ml-2 text-red-600">
+                          <span className="ml-1 text-red-600">
                             · Saldo: {formatPrice(invoice.balance)}
                           </span>
                         )}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 pl-14 sm:pl-0">
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
                     {getStatusBadge(invoice.status)}
                     <button
                       onClick={() => setSelectedInvoice(invoice)}
-                      className="flex items-center gap-2 rounded-md border border-green-300 bg-green-50 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-100"
+                      className="flex items-center gap-1.5 rounded-md border border-green-300 bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700 hover:bg-green-100 sm:text-sm"
                     >
-                      <Download className="h-4 w-4" />
+                      <Download className="h-3.5 w-3.5" />
                       PDF
                     </button>
                     <button
                       onClick={() => setSelectedInvoice(invoice)}
-                      className="flex items-center gap-2 rounded-md border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-100"
+                      className="flex items-center gap-1.5 rounded-md border border-indigo-300 bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-100 sm:text-sm"
                     >
-                      <Printer className="h-4 w-4" />
+                      <Printer className="h-3.5 w-3.5" />
                       Imprimir
                     </button>
                   </div>
