@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { showToast } from "nextjs-toast-notify";
-import { Search, Printer, FileText, Loader2, Download, Table } from "lucide-react";
+import { Search, Printer, FileText, Loader2, Download, Table, X } from "lucide-react";
 import html2pdf from "html2pdf.js";
 import InvoicePrintView from "./InvoicePrintView";
 
@@ -602,8 +602,16 @@ export default function InvoicePrintClient() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Nombre del establecimiento, contacto o WhatsApp..."
-            className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-3 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
+            className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-9 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         {loadingClients ? (
