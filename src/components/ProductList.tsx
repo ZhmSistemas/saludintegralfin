@@ -46,7 +46,6 @@ export default function ProductList({ products }: { products: Product[] }) {
               </div>
               <div className="text-sm text-gray-600">
                 <p>Stock: {product.stock}</p>
-                {product.description && <p>Descripción: {product.description}</p>}
               </div>
             </div>
             <div className="mt-4 flex justify-end gap-2">
