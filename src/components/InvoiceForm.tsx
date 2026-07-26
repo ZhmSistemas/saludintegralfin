@@ -255,7 +255,7 @@ export default function InvoiceForm() {
       setPaymentAmount("");
 
       // Notificar al dashboard padre que debe cambiar la selección
-      /* if (window.parent !== window) {
+      if (window.parent !== window) {
         window.parent.postMessage(
           {
             type: "UPDATE_DASHBOARD_SELECTION",
@@ -263,7 +263,7 @@ export default function InvoiceForm() {
           },
           "*",
         );
-      } */
+      }
       router.push("/dashboard/facturas/muestrafactura");
     } catch (error) {
       if (error instanceof Error) {
