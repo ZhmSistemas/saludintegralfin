@@ -50,6 +50,7 @@ export default function InvoiceForm() {
   const [clientWhatsapp, setClientWhatsapp] = useState("");
   const [imagen, setImagen] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [observation, setObservation] = useState("");
 
   const router = useRouter();
 
@@ -239,6 +240,7 @@ export default function InvoiceForm() {
             method: p.method,
           })),
           imageUrl: uploadedImage.image_url,
+          observation,
         }),
       });
 
@@ -394,6 +396,19 @@ export default function InvoiceForm() {
               value={clientWhatsapp}
               readOnly
               className="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 shadow-sm sm:text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              Observación
+            </label>
+            <textarea
+              value={observation}
+              onChange={(e) => setObservation(e.target.value)}
+              rows={3}
+              placeholder="Escribe una observación breve..."
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
             />
           </div>
         </div>

@@ -27,6 +27,7 @@ export type Invoice = {
   payments: Payment[];
   paidAmount: number;
   balance: number;
+  observation?: string;
   status: "pending" | "partial" | "paid";
   createdAt: Date;
   updatedAt: Date;
@@ -77,6 +78,7 @@ const InvoiceSchema = new mongoose.Schema(
     discount: { type: Number, required: true, default: 0 },
     total: { type: Number, required: true, default: 0 },
     image: { type: String },
+    observation: { type: String, default: "" },
     payments: [PaymentSchema],
     paidAmount: { type: Number, required: true, default: 0 },
     balance: { type: Number, required: true, default: 0 },

@@ -36,7 +36,7 @@ export const GET = async (request: NextRequest) => {
 export const POST = async (request: NextRequest) => {
   try {
     const body = await request.json()
-    const { imageUrl, invoiceNumber, customerName, clientWhatsapp, invoiceDate, items, discount, payments } = body
+    const { imageUrl, invoiceNumber, customerName, clientWhatsapp, invoiceDate, items, discount, payments, observation } = body
 
     if (!invoiceNumber || !customerName || !clientWhatsapp || !items || items.length === 0) {
       return Response.json(
@@ -76,6 +76,7 @@ export const POST = async (request: NextRequest) => {
       balance,
       status,
       image: imageUrl,
+      observation: observation || "",
     })
 
     await newInvoice.save()

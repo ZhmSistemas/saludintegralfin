@@ -87,7 +87,7 @@ export const PUT = async (request: NextRequest, { params }: { params: Promise<{ 
       )
     }
 
-    const { customerName, clientWhatsapp, items, discount, payments, imageUrl } = body
+    const { customerName, clientWhatsapp, items, discount, payments, imageUrl, observation } = body
 
     if (customerName) invoice.customerName = customerName
     if (clientWhatsapp !== undefined) invoice.clientWhatsapp = clientWhatsapp
@@ -105,6 +105,7 @@ export const PUT = async (request: NextRequest, { params }: { params: Promise<{ 
       invoice.paidAmount = invoice.payments.reduce((acc: number, p: { amount: number }) => acc + p.amount, 0)
     }
     if (imageUrl) invoice.image = imageUrl
+    if (observation !== undefined) invoice.observation = observation
 
     invoice.total = Math.max(0, invoice.subtotal - invoice.discount)
     invoice.balance = invoice.total - invoice.paidAmount
