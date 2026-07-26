@@ -138,6 +138,10 @@ export default function InvoiceList() {
         return "Tarjeta";
       case "transfer":
         return "Transferencia";
+      case "cruce":
+        return "Cruce Cuentas";
+      case "other":
+        return "Otro";
       default:
         return "Efectivo";
     }
@@ -626,6 +630,8 @@ export default function InvoiceList() {
                               <option value="cash">Efectivo</option>
                               <option value="card">Tarjeta</option>
                               <option value="transfer">Transferencia</option>
+                              <option value="cruce">Cruce Cuentas</option>
+                              <option value="other">Otro</option>
                             </select>
                           </div>
                           <div className="flex items-end">

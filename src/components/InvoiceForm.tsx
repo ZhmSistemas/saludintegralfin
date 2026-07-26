@@ -564,6 +564,8 @@ export default function InvoiceForm() {
                 <option value="cash">Efectivo</option>
                 <option value="card">Tarjeta</option>
                 <option value="transfer">Transferencia</option>
+                <option value="cruce">Cruce Cuentas</option>
+                <option value="other">Otro</option>
               </select>
             </div>
             <div className="flex items-end">
@@ -612,7 +614,11 @@ export default function InvoiceForm() {
                           ? "Efectivo"
                           : payment.method === "card"
                             ? "Tarjeta"
-                            : "Transferencia"}
+                            : payment.method === "cruce"
+                              ? "Cruce Cuentas"
+                              : payment.method === "other"
+                                ? "Otro"
+                                : "Transferencia"}
                       </td>
                       <td className="py-2 text-sm text-gray-600">
                         {payment.observation || "—"}
