@@ -52,6 +52,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: Promise<
       amount: Number(payment.amount),
       date: new Date(),
       method: payment.method || 'cash',
+      observation: payment.observation || '',
     })
 
     invoice.paidAmount = invoice.payments.reduce((acc: number, p: { amount: number }) => acc + p.amount, 0)
@@ -97,10 +98,11 @@ export const PUT = async (request: NextRequest, { params }: { params: Promise<{ 
     }
     if (discount !== undefined) invoice.discount = Number(discount)
     if (payments) {
-      invoice.payments = payments.map((p: { amount: number; method: string }) => ({
+      invoice.payments = payments.map((p: { amount: number; method: string; observation?: string }) => ({
         amount: Number(p.amount),
         date: new Date(),
-        method: p.method || 'cash'
+        method: p.method || 'cash',
+        observation: p.observation || '',
       }))
       invoice.paidAmount = invoice.payments.reduce((acc: number, p: { amount: number }) => acc + p.amount, 0)
     }

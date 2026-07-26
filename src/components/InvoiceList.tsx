@@ -28,6 +28,7 @@ type Payment = {
   amount: number;
   date: string;
   method: string;
+  observation?: string;
 };
 
 type Invoice = {
@@ -60,6 +61,7 @@ export default function InvoiceList() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [paymentObservation, setPaymentObservation] = useState("");
   const [addingPayment, setAddingPayment] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -165,6 +167,7 @@ export default function InvoiceList() {
     setExpandedInvoice(expandedInvoice === id ? null : id);
     setPaymentAmount("");
     setPaymentMethod("cash");
+    setPaymentObservation("");
     setPaymentError(null);
   };
 
@@ -219,7 +222,7 @@ export default function InvoiceList() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          payment: { amount: newPaymentAmount, method: paymentMethod },
+          payment: { amount: newPaymentAmount, method: paymentMethod, observation: paymentObservation },
         }),
       });
 
@@ -231,6 +234,7 @@ export default function InvoiceList() {
       );
       setPaymentAmount("");
       setPaymentMethod("cash");
+      setPaymentObservation("");
     } catch {
       setPaymentError("Error al registrar el abono");
     } finally {
@@ -557,6 +561,7 @@ export default function InvoiceList() {
                                   <th className="pb-2">Monto</th>
                                   <th className="pb-2">Método</th>
                                   <th className="pb-2">Fecha</th>
+                                  <th className="pb-2">Observación</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -570,6 +575,9 @@ export default function InvoiceList() {
                                     </td>
                                     <td className="py-2">
                                       {formatDate(payment.date)}
+                                    </td>
+                                    <td className="py-2 text-sm text-gray-600">
+                                      {payment.observation || "—"}
                                     </td>
                                   </tr>
                                 ))}
@@ -631,6 +639,19 @@ export default function InvoiceList() {
                                 : "Abonar"}
                             </button>
                           </div>
+                        </div>
+                        <div className="mt-3">
+                          <label className="block text-sm font-medium text-gray-700">
+                            Observación
+                          </label>
+                          <input
+                            type="text"
+                            value={paymentObservation}
+                            onChange={(e) => setPaymentObservation(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            placeholder="Comentario del abono (opcional)"
+                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                          />
                         </div>
                         {paymentError && (
                           <p className="mt-2 text-sm text-red-600">

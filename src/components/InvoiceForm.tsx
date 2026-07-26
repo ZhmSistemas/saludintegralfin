@@ -25,6 +25,7 @@ type InvoiceItem = {
 type Payment = {
   amount: string;
   method: string;
+  observation: string;
 };
 
 type Client = {
@@ -45,6 +46,7 @@ export default function InvoiceForm() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [paymentObservation, setPaymentObservation] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [discount, setDiscount] = useState("");
   const [clientWhatsapp, setClientWhatsapp] = useState("");
@@ -145,9 +147,10 @@ export default function InvoiceForm() {
     if (!paymentAmount || Number(paymentAmount) <= 0) return;
     setPayments([
       ...payments,
-      { amount: paymentAmount, method: paymentMethod },
+      { amount: paymentAmount, method: paymentMethod, observation: paymentObservation },
     ]);
     setPaymentAmount("");
+    setPaymentObservation("");
   };
 
   const removePayment = (index: number) => {
@@ -238,6 +241,7 @@ export default function InvoiceForm() {
           payments: payments.map((p) => ({
             amount: Number(p.amount),
             method: p.method,
+            observation: p.observation,
           })),
           imageUrl: uploadedImage.image_url,
           observation,
@@ -573,6 +577,18 @@ export default function InvoiceForm() {
               </button>
             </div>
           </div>
+          <div className="mt-3">
+            <label className="block text-sm font-medium text-gray-700">
+              Observación
+            </label>
+            <input
+              type="text"
+              value={paymentObservation}
+              onChange={(e) => setPaymentObservation(e.target.value)}
+              placeholder="Comentario del abono (opcional)"
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+            />
+          </div>
 
           {payments.length > 0 && (
             <div className="mt-4">
@@ -581,6 +597,7 @@ export default function InvoiceForm() {
                   <tr className="border-b text-left text-sm font-medium text-gray-700">
                     <th className="pb-2">Monto</th>
                     <th className="pb-2">Método</th>
+                    <th className="pb-2">Observación</th>
                     <th className="pb-2"></th>
                   </tr>
                 </thead>
@@ -596,6 +613,9 @@ export default function InvoiceForm() {
                           : payment.method === "card"
                             ? "Tarjeta"
                             : "Transferencia"}
+                      </td>
+                      <td className="py-2 text-sm text-gray-600">
+                        {payment.observation || "—"}
                       </td>
                       <td className="py-2">
                         <button
