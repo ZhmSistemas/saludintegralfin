@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
 
-type MenuOption =  'creafactura' | 'muestrafactura' | 'imprimirfactura' | 'creaproducto' | 'muestraproducto' | 'creacliente' | 'muestracliente' | 'usuarios' | null
+type MenuOption =  'inicio' | 'creafactura' | 'muestrafactura' | 'imprimirfactura' | 'creaproducto' | 'muestraproducto' | 'creacliente' | 'muestracliente' | 'usuarios' | null
 
 interface Invoice {
   _id: string
@@ -34,6 +34,7 @@ export default function DashboardPage() {
   const [resetTimer, setResetTimer] = useState<NodeJS.Timeout | null>(null)
 
   const menuItems = [    
+    { id: 'inicio' as MenuOption, label: 'Inicio', icon: '🏠' },
     { id: 'creafactura' as MenuOption, label: 'Crear Factura', icon: '📄' },
     { id: 'muestrafactura' as MenuOption, label: 'Mostrar Factura', icon: '📋' },
     { id: 'imprimirfactura' as MenuOption, label: 'Imprimir Facturas', icon: '🖨️' },
@@ -223,9 +224,9 @@ export default function DashboardPage() {
         {menuItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => handleMenuClick(item.id)}
+            onClick={() => item.id === 'inicio' ? handleBackToHome() : handleMenuClick(item.id)}
             className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center gap-3 ${
-              selectedOption === item.id
+              (item.id === 'inicio' && selectedOption === null) || selectedOption === item.id
                 ? 'bg-indigo-600 text-white'
                 : 'text-gray-300 hover:bg-gray-700'
             }`}
