@@ -15,9 +15,31 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Salud Integral",
+  title: "Salud Integral - Productos Naturales para tu Bienestar",
   description:
-    "todo en productos para tu salud y bienestar",
+    "Tienda de productos naturales para salud y bienestar. Suplementos, vitaminas, productos orgánicos y más. Envíos a todo el país.",
+  keywords: [
+    "salud integral",
+    "productos naturales",
+    "bienestar",
+    "suplementos",
+    "vitaminas",
+    "productos orgánicos",
+    "tienda salud",
+    "productos naturales Colombia",
+    "salud y bienestar",
+    "nutrición",
+    " productos ecológicos",
+    "tienda online salud",
+  ],
+  openGraph: {
+    title: "Salud Integral - Productos Naturales para tu Bienestar",
+    description:
+      "Tienda de productos naturales para salud y bienestar. Suplementos, vitaminas, productos orgánicos y más.",
+    type: "website",
+    locale: "es_CO",
+    siteName: "Salud Integral",
+  },
 };
 
 export default function RootLayout({
