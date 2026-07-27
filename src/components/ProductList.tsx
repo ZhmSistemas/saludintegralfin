@@ -2,14 +2,18 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { showToast } from 'nextjs-toast-notify'
 import { Pencil, Trash2 } from 'lucide-react'
 import { Product } from '@/lib/models/ProductModel'
 
 export default function ProductList({ products }: { products: Product[] }) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const isSuperAdmin = session?.user?.isSuperAdmin === true
 
   const handleDelete = async (id: string) => {
     setIsDeleting(true)
@@ -56,13 +60,15 @@ export default function ProductList({ products }: { products: Product[] }) {
                 <Pencil className="h-4 w-4" />
                 Editar
               </button>
-              <button
-                onClick={() => setProductToDelete(product._id)}
-                className="flex items-center gap-1 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-              >
-                <Trash2 className="h-4 w-4" />
-                Eliminar
-              </button>
+              {isSuperAdmin && (
+                <button
+                  onClick={() => setProductToDelete(product._id)}
+                  className="flex items-center gap-1 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Eliminar
+                </button>
+              )}
             </div>
           </div>
         ))}

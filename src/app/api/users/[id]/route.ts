@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import dbConnect from '@/lib/dbConnect'
 import UserModel from '@/lib/models/UserModel'
 import { Types } from 'mongoose'
@@ -8,6 +10,15 @@ export const DELETE = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
+    const session = await getServerSession(authOptions)
+
+    if (!session || !session.user?.isSuperAdmin) {
+      return Response.json(
+        { message: 'Solo el superAdministrador puede eliminar usuarios' },
+        { status: 403 }
+      )
+    }
+
     const { id } = await params
 
     if (!Types.ObjectId.isValid(id)) {
@@ -42,6 +53,15 @@ export const PATCH = async (
   { params }: { params: Promise<{ id: string }> }
 ) => {
   try {
+    const session = await getServerSession(authOptions)
+
+    if (!session || !session.user?.isSuperAdmin) {
+      return Response.json(
+        { message: 'Solo el superAdministrador puede cambiar roles de usuario' },
+        { status: 403 }
+      )
+    }
+
     const { id } = await params
     
     if (!Types.ObjectId.isValid(id)) {

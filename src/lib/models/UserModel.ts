@@ -8,6 +8,7 @@ export type User = {
   password: string
   isAdmin: boolean
   isUser: boolean
+  isSuperAdmin: boolean
 }
 
 const UserSchema = new mongoose.Schema(
@@ -32,6 +33,7 @@ const UserSchema = new mongoose.Schema(
     },
     isAdmin: { type: Boolean, required: true, default: false },
     isUser: { type: Boolean, required: true, default: true },
+    isSuperAdmin: { type: Boolean, required: true, default: false },
   },
   { timestamps: true }
 )

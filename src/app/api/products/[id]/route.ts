@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import dbConnect from '@/lib/dbConnect'
 import ProductModel from '@/lib/models/ProductModel'
 
@@ -55,6 +57,15 @@ export const PATCH = async (request: NextRequest, { params }: { params: Promise<
 
 export const DELETE = async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const session = await getServerSession(authOptions)
+
+    if (!session || !session.user?.isSuperAdmin) {
+      return NextResponse.json(
+        { message: 'Solo el superAdministrador puede eliminar productos' },
+        { status: 403 }
+      )
+    }
+
     await dbConnect()
     const { id } = await params
 

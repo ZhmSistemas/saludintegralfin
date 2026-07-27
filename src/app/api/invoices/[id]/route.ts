@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server'
+import { getServerSession } from 'next-auth/next'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
 import dbConnect from '@/lib/dbConnect'
 import InvoiceModel from '@/lib/models/InvoiceModel'
 
@@ -130,6 +132,15 @@ export const PUT = async (request: NextRequest, { params }: { params: Promise<{ 
 
 export const DELETE = async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
+    const session = await getServerSession(authOptions)
+
+    if (!session || !session.user?.isSuperAdmin) {
+      return Response.json(
+        { message: 'Solo el superAdministrador puede eliminar facturas' },
+        { status: 403 }
+      )
+    }
+
     await dbConnect()
     const { id } = await params
     const invoice = await InvoiceModel.findById(id)

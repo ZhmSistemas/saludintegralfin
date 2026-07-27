@@ -1,12 +1,16 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { User } from '@/lib/models/UserModel'
 import { showToast } from 'nextjs-toast-notify'
 import { AlertTriangle, Trash2 } from 'lucide-react'
 
 export default function UserList() {
+  const { data: session } = useSession()
   const [users, setUsers] = useState<User[]>([])
+
+  const isSuperAdmin = session?.user?.isSuperAdmin === true
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
@@ -31,6 +35,16 @@ export default function UserList() {
     userName: ''
   })
   const [isDeleting, setIsDeleting] = useState(false)
+  const [promoting, setPromoting] = useState<string | null>(null)
+  const [promoteConfirm, setPromoteConfirm] = useState<{
+    isOpen: boolean
+    userId: string | null
+    userName: string
+  }>({
+    isOpen: false,
+    userId: null,
+    userName: ''
+  })
 
   useEffect(() => {
     fetchUsers()
@@ -150,6 +164,49 @@ export default function UserList() {
     }
   }
 
+  const openPromoteConfirm = (userId: string, userName: string) => {
+    setPromoteConfirm({ isOpen: true, userId, userName })
+  }
+
+  const closePromoteConfirm = () => {
+    setPromoteConfirm({ isOpen: false, userId: null, userName: '' })
+  }
+
+  const confirmPromoteSuperAdmin = async () => {
+    if (!promoteConfirm.userId) return
+
+    try {
+      setPromoting(promoteConfirm.userId)
+      closePromoteConfirm()
+
+      const response = await fetch('/api/users/promote-superadmin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: promoteConfirm.userId }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.message || 'Error al promover usuario')
+      }
+
+      const data = await response.json()
+      setUsers(users.map(user =>
+        user._id === promoteConfirm.userId ? data.user : user
+      ))
+
+      showToast.success(data.message)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+      setError(errorMessage)
+      showToast.error(errorMessage)
+    } finally {
+      setPromoting(null)
+    }
+  }
+
   if (loading) {
     return <div className="p-4">Cargando usuarios...</div>
   }
@@ -173,7 +230,7 @@ export default function UserList() {
               <th className="border border-gray-300 px-4 py-2 text-left">Nombre</th>
               <th className="border border-gray-300 px-4 py-2 text-left">Email</th>
               <th className="border border-gray-300 px-4 py-2 text-left">WhatsApp</th>
-              <th className="border border-gray-300 px-4 py-2 text-center">Administrador</th>
+              <th className="border border-gray-300 px-4 py-2 text-center">Rol</th>
               <th className="border border-gray-300 px-4 py-2 text-center">Acciones</th>
             </tr>
           </thead>
@@ -184,34 +241,55 @@ export default function UserList() {
                 <td className="border border-gray-300 px-4 py-2">{user.email}</td>
                 <td className="border border-gray-300 px-4 py-2">{user.whatsapp}</td>
                 <td className="border border-gray-300 px-4 py-2 text-center">
-                  <span className={`px-3 py-1 rounded text-white text-sm font-semibold ${
-                    user.isAdmin ? 'bg-green-500' : 'bg-gray-400'
-                  }`}>
-                    {user.isAdmin ? 'Sí' : 'No'}
-                  </span>
+                  {user.isSuperAdmin ? (
+                    <span className="px-3 py-1 rounded text-white text-sm font-semibold bg-purple-500">
+                      SuperAdmin
+                    </span>
+                  ) : user.isAdmin ? (
+                    <span className="px-3 py-1 rounded text-white text-sm font-semibold bg-green-500">
+                      Admin
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 rounded text-white text-sm font-semibold bg-gray-400">
+                      Usuario
+                    </span>
+                  )}
                 </td>
                 <td className="border border-gray-300 px-4 py-2 text-center">
                   <div className="flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => toggleAdmin(user._id, user.isAdmin)}
-                      disabled={updating === user._id}
-                      className={`px-4 py-2 rounded text-white font-semibold transition ${
-                        user.isAdmin
-                          ? 'bg-red-500 hover:bg-red-600'
-                          : 'bg-blue-500 hover:bg-blue-600'
-                      } ${updating === user._id ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    >
-                      {updating === user._id ? 'Actualizando...' : (
-                        user.isAdmin ? 'Quitar Admin' : 'Hacer Admin'
-                      )}
-                    </button>
-                    <button
-                      onClick={() => openDeleteConfirm(user._id, user.name)}
-                      className="rounded-md p-2 text-red-600 hover:bg-red-50 transition"
-                      title="Eliminar usuario"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {isSuperAdmin && !user.isSuperAdmin && (
+                      <button
+                        onClick={() => openPromoteConfirm(user._id, user.name)}
+                        disabled={promoting === user._id}
+                        className="px-4 py-2 rounded text-white font-semibold transition bg-purple-500 hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {promoting === user._id ? 'Promoviendo...' : 'Hacer SuperAdmin'}
+                      </button>
+                    )}
+                    {isSuperAdmin && (
+                      <button
+                        onClick={() => toggleAdmin(user._id, user.isAdmin)}
+                        disabled={updating === user._id}
+                        className={`px-4 py-2 rounded text-white font-semibold transition ${
+                          user.isAdmin
+                            ? 'bg-red-500 hover:bg-red-600'
+                            : 'bg-blue-500 hover:bg-blue-600'
+                        } ${updating === user._id ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        {updating === user._id ? 'Actualizando...' : (
+                          user.isAdmin ? 'Quitar Admin' : 'Hacer Admin'
+                        )}
+                      </button>
+                    )}
+                    {isSuperAdmin && (
+                      <button
+                        onClick={() => openDeleteConfirm(user._id, user.name)}
+                        className="rounded-md p-2 text-red-600 hover:bg-red-50 transition"
+                        title="Eliminar usuario"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -283,6 +361,38 @@ export default function UserList() {
                 className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-70"
               >
                 {isDeleting ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {promoteConfirm.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <div className="mb-4 flex items-center gap-3">
+              <AlertTriangle className="h-6 w-6 text-purple-500" />
+              <h3 className="text-lg font-semibold text-gray-900">
+                Confirmar promoción a SuperAdmin
+              </h3>
+            </div>
+            <p className="mb-6 text-sm text-gray-600">
+              ¿Está seguro que desea promover a <span className="font-semibold">{promoteConfirm.userName}</span> como <span className="font-semibold text-purple-600">SuperAdministrador</span>?
+              Este usuario tendrá acceso total al sistema, incluyendo la capacidad de eliminar productos, facturas y gestionar roles de usuarios.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={closePromoteConfirm}
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={confirmPromoteSuperAdmin}
+                disabled={promoting === promoteConfirm.userId}
+                className="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-70"
+              >
+                {promoting === promoteConfirm.userId ? 'Promoviendo...' : 'Confirmar'}
               </button>
             </div>
           </div>

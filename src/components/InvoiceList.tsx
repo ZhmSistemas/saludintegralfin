@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { showToast } from "nextjs-toast-notify";
 import {
   ChevronDown,
@@ -50,7 +51,10 @@ type Invoice = {
 
 export default function InvoiceList() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+
+  const isSuperAdmin = session?.user?.isSuperAdmin === true;
   const [loading, setLoading] = useState(true);
   const [expandedInvoice, setExpandedInvoice] = useState<string | null>(null);
   const [filter, setFilter] = useState("all");
@@ -499,13 +503,15 @@ export default function InvoiceList() {
                     >
                       <Printer className="h-4 w-4" />
                     </button>
-                    <button
-                      onClick={(e) => confirmDelete(invoice._id, e)}
-                      className="rounded-md p-1 text-red-600 hover:bg-red-50"
-                      title="Eliminar factura"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    {isSuperAdmin && (
+                      <button
+                        onClick={(e) => confirmDelete(invoice._id, e)}
+                        className="rounded-md p-1 text-red-600 hover:bg-red-50"
+                        title="Eliminar factura"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
                     {expandedInvoice === invoice._id ? (
                       <ChevronUp className="h-5 w-5 text-gray-400" />
                     ) : (
