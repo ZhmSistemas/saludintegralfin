@@ -218,7 +218,7 @@ export default function DashboardPage() {
       <div
         className={`${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } fixed lg:relative lg:translate-x-0 z-20 w-64 bg-gray-800 text-white p-4 space-y-2 h-full transition-transform duration-300 ease-in-out`}
+        } fixed lg:relative lg:translate-x-0 z-20 w-64 bg-gray-800 text-white p-4 space-y-2 h-full overflow-y-auto transition-transform duration-300 ease-in-out`}
       >
         <h2 className="text-xl font-bold mb-6 pl-10 lg:pl-0"><Link href="/">Dashboard</Link></h2>
         {menuItems.map((item) => (
