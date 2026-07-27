@@ -2,13 +2,17 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Client } from '@/lib/models/ClientModel'
 import { showToast } from 'nextjs-toast-notify'
 
 export default function ClientList({ clients }: { clients: Client[] }) {
   const router = useRouter()
+  const { data: session } = useSession()
   const [clientToDelete, setClientToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const isSuperAdmin = session?.user?.isSuperAdmin === true
 
   const handleDelete = async (id: string) => {
     setIsDeleting(true)
@@ -49,12 +53,14 @@ export default function ClientList({ clients }: { clients: Client[] }) {
               </div>
             </div>
             <div className="mt-4 flex justify-end">
-              <button
-                onClick={() => setClientToDelete(client._id)}
-                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-              >
-                Eliminar
-              </button>
+              {isSuperAdmin && (
+                <button
+                  onClick={() => setClientToDelete(client._id)}
+                  className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                >
+                  Eliminar
+                </button>
+              )}
             </div>
           </div>
         ))}
