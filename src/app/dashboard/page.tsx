@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Menu, X } from 'lucide-react'
 import Link from 'next/link'
+import { ExternalLink } from 'lucide-react'
 
 type MenuOption =  'inicio' | 'creafactura' | 'muestrafactura' | 'imprimirfactura' | 'creaproducto' | 'muestraproducto' | 'creacliente' | 'muestracliente' | 'usuarios' | null
 
@@ -44,6 +45,8 @@ export default function DashboardPage() {
     { id: 'muestracliente' as MenuOption, label: 'Mostrar Clientes', icon: '👤' },
     { id: 'usuarios' as MenuOption, label: 'Mostrar Usuarios', icon: '👥' },
   ]
+
+  const externalLink = { label: 'Ver Sitio Web', href: '/' }
 
   const getIframeSrc = () => {
     switch (selectedOption) {
@@ -235,6 +238,16 @@ export default function DashboardPage() {
             <span className="font-medium">{item.label}</span>
           </button>
         ))}
+        <div className="border-t border-gray-600 pt-2 mt-2">
+          <Link
+            href={externalLink.href}
+            className="w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center gap-3 text-gray-300 hover:bg-gray-700"
+            target="_blank"
+          >
+            <ExternalLink className="h-5 w-5" />
+            <span className="font-medium">{externalLink.label}</span>
+          </Link>
+        </div>
       </div>
 
       <div className="flex-1 overflow-hidden bg-gray-100">
