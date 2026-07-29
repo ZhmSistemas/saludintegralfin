@@ -52,7 +52,7 @@ export const PATCH = async (request: NextRequest, { params }: { params: Promise<
 
     invoice.payments.push({
       amount: Number(payment.amount),
-      date: new Date(),
+      date: payment.date ? new Date(payment.date) : new Date(),
       method: payment.method || 'cash',
       observation: payment.observation || '',
     })

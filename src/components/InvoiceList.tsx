@@ -65,6 +65,9 @@ export default function InvoiceList() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [paymentDate, setPaymentDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
   const [paymentObservation, setPaymentObservation] = useState("");
   const [addingPayment, setAddingPayment] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -230,7 +233,7 @@ export default function InvoiceList() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          payment: { amount: newPaymentAmount, method: paymentMethod, observation: paymentObservation },
+          payment: { amount: newPaymentAmount, method: paymentMethod, observation: paymentObservation, date: paymentDate },
         }),
       });
 
@@ -242,6 +245,7 @@ export default function InvoiceList() {
       );
       setPaymentAmount("");
       setPaymentMethod("cash");
+      setPaymentDate(new Date().toISOString().split("T")[0]);
       setPaymentObservation("");
     } catch {
       setPaymentError("Error al registrar el abono");
@@ -604,6 +608,18 @@ export default function InvoiceList() {
                           Agregar Abono
                         </h3>
                         <div className="flex flex-col gap-4 sm:flex-row">
+                          <div className="w-full sm:w-40">
+                            <label className="block text-sm font-medium text-gray-700">
+                              Fecha
+                            </label>
+                            <input
+                              type="date"
+                              value={paymentDate}
+                              onChange={(e) => setPaymentDate(e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                            />
+                          </div>
                           <div className="flex-1">
                             <label className="block text-sm font-medium text-gray-700">
                               Monto
