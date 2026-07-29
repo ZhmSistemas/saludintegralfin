@@ -362,6 +362,9 @@ export default function ListaFacturas() {
                     <p className="text-sm text-gray-600">
                       {invoice.customerName}
                     </p>
+                    <p className="text-xs text-gray-400 sm:hidden">
+                      {formatDate(invoice.invoiceDate || invoice.createdAt)}
+                    </p>
                   </div>
                 </div>
 
