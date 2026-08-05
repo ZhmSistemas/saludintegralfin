@@ -13,6 +13,7 @@ export type Payment = {
   date: Date;
   method: string;
   observation?: string;
+  image?: string;
 };
 
 export type Invoice = {
@@ -51,6 +52,7 @@ const PaymentSchema = new mongoose.Schema(
     date: { type: Date, default: Date.now },
     method: { type: String, default: "cash" },
     observation: { type: String, default: "" },
+    image: { type: String, default: "" },
   },
   { _id: false },
 );

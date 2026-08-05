@@ -78,7 +78,6 @@ export const POST = async (request: NextRequest) => {
       image: imageUrl,
       observation: observation || "",
     })
-
     await newInvoice.save()
     return Response.json(
       { message: 'Factura creada exitosamente', invoice: newInvoice },
