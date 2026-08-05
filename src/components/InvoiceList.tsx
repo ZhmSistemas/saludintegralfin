@@ -64,6 +64,12 @@ export default function InvoiceList() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deletePaymentConfirm, setDeletePaymentConfirm] = useState<{
+    invoiceId: string;
+    paymentIndex: number;
+    amount: number;
+  } | null>(null);
+  const [isDeletingPayment, setIsDeletingPayment] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [paymentDate, setPaymentDate] = useState(
@@ -194,6 +200,43 @@ export default function InvoiceList() {
 
   const cancelDelete = () => {
     setDeleteConfirmId(null);
+  };
+
+  const confirmDeletePayment = (invoiceId: string, paymentIndex: number, amount: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeletePaymentConfirm({ invoiceId, paymentIndex, amount });
+  };
+
+  const cancelDeletePayment = () => {
+    setDeletePaymentConfirm(null);
+  };
+
+  const deletePayment = async () => {
+    if (!deletePaymentConfirm) return;
+    const { invoiceId, paymentIndex } = deletePaymentConfirm;
+
+    setIsDeletingPayment(true);
+    try {
+      const res = await fetch(`/api/invoices/${invoiceId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ removePayment: paymentIndex }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Error al eliminar el abono");
+      }
+      const { invoice: updatedInvoice } = await res.json();
+      setInvoices(
+        invoices.map((inv) => (inv._id === invoiceId ? updatedInvoice : inv)),
+      );
+      setDeletePaymentConfirm(null);
+      showToast.success("Abono eliminado exitosamente");
+    } catch (err) {
+      showToast.error(err instanceof Error ? err.message : "Error al eliminar el abono");
+    } finally {
+      setIsDeletingPayment(false);
+    }
   };
 
   const deleteInvoice = async (id: string, e: React.MouseEvent) => {
@@ -642,6 +685,7 @@ export default function InvoiceList() {
                                   <th className="pb-2">Fecha</th>
                                   <th className="pb-2">Observación</th>
                                   <th className="pb-2">Imagen</th>
+                                  {isSuperAdmin && <th className="pb-2"></th>}
                                 </tr>
                               </thead>
                               <tbody>
@@ -682,6 +726,24 @@ export default function InvoiceList() {
                                         </span>
                                       )}
                                     </td>
+                                    {isSuperAdmin && (
+                                      <td className="py-2">
+                                        <button
+                                          onClick={(e) =>
+                                            confirmDeletePayment(
+                                              invoice._id,
+                                              idx,
+                                              payment.amount,
+                                              e,
+                                            )
+                                          }
+                                          className="rounded-md p-1 text-red-600 hover:bg-red-50"
+                                          title="Eliminar abono"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </button>
+                                      </td>
+                                    )}
                                   </tr>
                                 ))}
                               </tbody>
@@ -879,6 +941,42 @@ export default function InvoiceList() {
                 className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-70"
               >
                 {isDeleting ? "Eliminando..." : "Eliminar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deletePaymentConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-lg bg-white shadow-xl p-2">
+            <div className="mb-4 flex items-center gap-3">
+              <AlertTriangle className="h-6 w-6 text-red-500" />
+              <h3 className="text-lg font-semibold text-gray-900 text-center w-full">
+                Confirmar eliminación de abono
+              </h3>
+            </div>
+            <p className="mb-6 text-sm text-gray-600">
+              ¿Está seguro que desea eliminar el abono por{" "}
+              <span className="font-semibold">
+                {formatPrice(deletePaymentConfirm.amount)}
+              </span>
+              ? El saldo de la factura se recalculará sin este abono. Esta
+              acción no se puede deshacer.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={cancelDeletePayment}
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={deletePayment}
+                disabled={isDeletingPayment}
+                className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-70"
+              >
+                {isDeletingPayment ? "Eliminando..." : "Eliminar"}
               </button>
             </div>
           </div>

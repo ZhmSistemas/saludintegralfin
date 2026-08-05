@@ -30,11 +30,11 @@ export const GET = async (request: NextRequest, { params }: { params: Promise<{ 
 export const PATCH = async (request: NextRequest, { params }: { params: Promise<{ id: string }> }) => {
   try {
     const body = await request.json()
-    const { payment } = body
+    const { payment, removePayment } = body
 
-    if (!payment || !payment.amount) {
+    if (!payment && removePayment === undefined) {
       return Response.json(
-        { message: 'Monto de pago es obligatorio' },
+        { message: 'Datos de pago son obligatorios' },
         { status: 422 }
       )
     }
@@ -47,6 +47,44 @@ export const PATCH = async (request: NextRequest, { params }: { params: Promise<
       return Response.json(
         { message: 'Factura no encontrada' },
         { status: 404 }
+      )
+    }
+
+    if (removePayment !== undefined) {
+      const session = await getServerSession(authOptions)
+
+      if (!session || !session.user?.isSuperAdmin) {
+        return Response.json(
+          { message: 'Solo el superAdministrador puede eliminar abonos' },
+          { status: 403 }
+        )
+      }
+
+      const index = Number(removePayment)
+      if (isNaN(index) || index < 0 || index >= invoice.payments.length) {
+        return Response.json(
+          { message: 'Abono no encontrado' },
+          { status: 404 }
+        )
+      }
+
+      invoice.payments.splice(index, 1)
+      invoice.paidAmount = invoice.payments.reduce((acc: number, p: { amount: number }) => acc + p.amount, 0)
+      invoice.balance = invoice.total - invoice.paidAmount
+      invoice.status = invoice.balance <= 0 ? 'paid' : invoice.paidAmount > 0 ? 'partial' : 'pending'
+
+      await invoice.save()
+
+      return Response.json(
+        { message: 'Abono eliminado exitosamente', invoice },
+        { status: 200 }
+      )
+    }
+
+    if (!payment || !payment.amount) {
+      return Response.json(
+        { message: 'Monto de pago es obligatorio' },
+        { status: 422 }
       )
     }
 
