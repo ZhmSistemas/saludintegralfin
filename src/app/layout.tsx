@@ -1,45 +1,45 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import ConditionalNavbar from "@/components/ConditionalNavbar";
-import WhatsAppButton from "@/components/WhatsAppButton";
-import { Providers } from "./Providers";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import ConditionalNavbar from '@/components/ConditionalNavbar';
+import ConditionalWhatsAppButton from '@/components/ConditionalWhatsAppButton';
+import { Providers } from './Providers';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Salud Integral - Productos Naturales para tu Bienestar",
+  title: 'Salud Integral - Productos Naturales para tu Bienestar',
   description:
-    "Tienda de productos naturales para salud y bienestar. Suplementos, vitaminas, productos orgánicos y más. Envíos a todo el país.",
+    'Tienda de productos naturales para salud y bienestar. Suplementos, vitaminas, productos orgánicos y más. Envíos a todo el país.',
   keywords: [
-    "salud integral",
-    "productos naturales",
-    "bienestar",
-    "suplementos",
-    "vitaminas",
-    "productos orgánicos",
-    "tienda salud",
-    "productos naturales Colombia",
-    "salud y bienestar",
-    "nutrición",
-    " productos ecológicos",
-    "tienda online salud",
+    'salud integral',
+    'productos naturales',
+    'bienestar',
+    'suplementos',
+    'vitaminas',
+    'productos orgánicos',
+    'tienda salud',
+    'productos naturales Colombia',
+    'salud y bienestar',
+    'nutrición',
+    ' productos ecológicos',
+    'tienda online salud',
   ],
   openGraph: {
-    title: "Salud Integral - Productos Naturales para tu Bienestar",
+    title: 'Salud Integral - Productos Naturales para tu Bienestar',
     description:
-      "Tienda de productos naturales para salud y bienestar. Suplementos, vitaminas, productos orgánicos y más.",
-    type: "website",
-    locale: "es_CO",
-    siteName: "Salud Integral",
+      'Tienda de productos naturales para salud y bienestar. Suplementos, vitaminas, productos orgánicos y más.',
+    type: 'website',
+    locale: 'es_CO',
+    siteName: 'Salud Integral',
   },
 };
 
@@ -57,10 +57,9 @@ export default function RootLayout({
         <Providers>
           <ConditionalNavbar />
           {children}
-          <WhatsAppButton />
+          <ConditionalWhatsAppButton />
         </Providers>
       </body>
     </html>
   );
 }
-
