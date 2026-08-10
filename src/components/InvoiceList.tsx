@@ -690,24 +690,26 @@ export default function InvoiceList() {
                           Productos
                         </h3>
                         <div className="overflow-x-auto">
-                          <table className="w-full text-sm min-w-[300px]">
+                          <table className="w-full table-fixed text-sm min-w-[420px]">
                             <thead>
                               <tr className="border-b text-left text-gray-600">
-                                <th className="pb-2">Producto</th>
-                                <th className="pb-2">Cant</th>
-                                <th className="pb-2">Precio</th>
-                                <th className="pb-2">Subtotal</th>
+                                <th className="px-2 pb-2">Producto</th>
+                                <th className="px-2 pb-2">Cant</th>
+                                <th className="px-2 pb-2">Precio</th>
+                                <th className="px-2 pb-2">Subtotal</th>
                               </tr>
                             </thead>
                             <tbody>
                               {invoice.items.map((item, idx) => (
-                                <tr key={idx} className="border-b">
-                                  <td className="py-2">{item.productName}</td>
-                                  <td className="py-2">{item.quantity}</td>
-                                  <td className="py-2">
+                                <tr key={idx} className="border-b align-top">
+                                  <td className="px-2 py-2">
+                                    {item.productName}
+                                  </td>
+                                  <td className="px-2 py-2">{item.quantity}</td>
+                                  <td className="px-2 py-2">
                                     {formatPrice(item.price)}
                                   </td>
-                                  <td className="py-2">
+                                  <td className="px-2 py-2">
                                     {formatPrice(item.subtotal)}
                                   </td>
                                 </tr>
@@ -727,33 +729,35 @@ export default function InvoiceList() {
                           </p>
                         ) : (
                           <div className="overflow-x-auto">
-                            <table className="w-full text-sm min-w-[300px]">
+                            <table className="w-full table-fixed text-sm min-w-[420px]">
                               <thead>
                                 <tr className="border-b text-left text-gray-600">
-                                  <th className="pb-2">Monto</th>
-                                  <th className="pb-2">Método</th>
-                                  <th className="pb-2">Fecha</th>
-                                  <th className="pb-2">Observación</th>
-                                  <th className="pb-2">Imagen</th>
-                                  {isSuperAdmin && <th className="pb-2"></th>}
+                                  <th className="px-2 pb-2">Monto</th>
+                                  <th className="px-2 pb-2">Método</th>
+                                  <th className="px-2 pb-2">Fecha</th>
+                                  <th className="px-2 pb-2">Observación</th>
+                                  <th className="px-2 pb-2">Imagen</th>
+                                  {isSuperAdmin && (
+                                    <th className="px-2 pb-2"></th>
+                                  )}
                                 </tr>
                               </thead>
                               <tbody>
                                 {invoice.payments.map((payment, idx) => (
-                                  <tr key={idx} className="border-b">
-                                    <td className="py-2">
+                                  <tr key={idx} className="border-b align-top">
+                                    <td className="px-2 py-2">
                                       {formatPrice(payment.amount)}
                                     </td>
-                                    <td className="py-2">
+                                    <td className="px-2 py-2">
                                       {getMethodName(payment.method)}
                                     </td>
-                                    <td className="py-2">
+                                    <td className="px-2 py-2">
                                       {formatDate(payment.date)}
                                     </td>
-                                    <td className="py-2 text-sm text-gray-600">
+                                    <td className="px-2 py-2 text-sm text-gray-600">
                                       {payment.observation || '—'}
                                     </td>
-                                    <td className="py-2">
+                                    <td className="px-2 py-2">
                                       {payment.image ? (
                                         <div
                                           className="h-10 w-10 cursor-pointer overflow-hidden rounded-md border border-gray-200"
@@ -777,7 +781,7 @@ export default function InvoiceList() {
                                       )}
                                     </td>
                                     {isSuperAdmin && (
-                                      <td className="py-2">
+                                      <td className="px-2 py-2">
                                         <button
                                           onClick={(e) =>
                                             confirmDeletePayment(
