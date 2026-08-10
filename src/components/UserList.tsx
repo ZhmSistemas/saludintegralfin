@@ -1,104 +1,107 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
-import { User } from '@/lib/models/UserModel'
-import { showToast } from 'nextjs-toast-notify'
-import { AlertTriangle, Trash2 } from 'lucide-react'
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { User } from '@/lib/models/UserModel';
+import { showToast } from 'nextjs-toast-notify';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
 export default function UserList() {
-  const { data: session } = useSession()
-  const [users, setUsers] = useState<User[]>([])
+  const { data: session } = useSession();
+  const [users, setUsers] = useState<User[]>([]);
 
-  const isSuperAdmin = session?.user?.isSuperAdmin === true
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [updating, setUpdating] = useState<string | null>(null)
+  const isSuperAdmin = session?.user?.isSuperAdmin === true;
+  const sortedUsers = [...users].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+  );
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [updating, setUpdating] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState<{
-    isOpen: boolean
-    userId: string | null
-    userName: string
-    currentStatus: boolean
+    isOpen: boolean;
+    userId: string | null;
+    userName: string;
+    currentStatus: boolean;
   }>({
     isOpen: false,
     userId: null,
     userName: '',
-    currentStatus: false
-  })
+    currentStatus: false,
+  });
   const [deleteConfirm, setDeleteConfirm] = useState<{
-    isOpen: boolean
-    userId: string | null
-    userName: string
+    isOpen: boolean;
+    userId: string | null;
+    userName: string;
   }>({
     isOpen: false,
     userId: null,
-    userName: ''
-  })
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [promoting, setPromoting] = useState<string | null>(null)
+    userName: '',
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [promoting, setPromoting] = useState<string | null>(null);
   const [promoteConfirm, setPromoteConfirm] = useState<{
-    isOpen: boolean
-    userId: string | null
-    userName: string
+    isOpen: boolean;
+    userId: string | null;
+    userName: string;
   }>({
     isOpen: false,
     userId: null,
-    userName: ''
-  })
+    userName: '',
+  });
 
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    fetchUsers();
+  }, []);
 
   const fetchUsers = async () => {
     try {
-      setLoading(true)
-      setError(null)
-      const response = await fetch('/api/users')
-      
+      setLoading(true);
+      setError(null);
+      const response = await fetch('/api/users');
+
       if (!response.ok) {
-        throw new Error('Error al cargar los usuarios')
+        throw new Error('Error al cargar los usuarios');
       }
-      
-      const data = await response.json()
-      setUsers(data)
+
+      const data = await response.json();
+      setUsers(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
-      showToast.error(err instanceof Error ? err.message : 'Error desconocido')
+      setError(err instanceof Error ? err.message : 'Error desconocido');
+      showToast.error(err instanceof Error ? err.message : 'Error desconocido');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const toggleAdmin = async (userId: string, currentStatus: boolean) => {
-    const user = users.find(u => u._id === userId)
-    if (!user) return
+    const user = users.find((u) => u._id === userId);
+    if (!user) return;
 
     setConfirmModal({
       isOpen: true,
       userId,
       userName: user.name,
-      currentStatus
-    })
-  }
+      currentStatus,
+    });
+  };
 
   const closeConfirmModal = () => {
     setConfirmModal({
       isOpen: false,
       userId: null,
       userName: '',
-      currentStatus: false
-    })
-  }
+      currentStatus: false,
+    });
+  };
 
   const confirmToggleAdmin = async () => {
-    if (!confirmModal.userId) return
+    if (!confirmModal.userId) return;
 
-    const { userId, currentStatus } = confirmModal
+    const { userId, currentStatus } = confirmModal;
 
     try {
-      setUpdating(userId)
-      closeConfirmModal()
+      setUpdating(userId);
+      closeConfirmModal();
 
       const response = await fetch(`/api/users/${userId}`, {
         method: 'PATCH',
@@ -106,78 +109,80 @@ export default function UserList() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ isAdmin: !currentStatus }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error('Error al actualizar el usuario')
+        throw new Error('Error al actualizar el usuario');
       }
 
-      const updatedUser = await response.json()
-      setUsers(users.map(user => 
-        user._id === userId ? updatedUser.user : user
-      ))
+      const updatedUser = await response.json();
+      setUsers(
+        users.map((user) => (user._id === userId ? updatedUser.user : user))
+      );
 
-      const successMessage = currentStatus 
+      const successMessage = currentStatus
         ? 'Permisos de administrador removidos exitosamente'
-        : 'Permisos de administrador otorgados exitosamente'
-      
-      showToast.success(successMessage)
+        : 'Permisos de administrador otorgados exitosamente';
+
+      showToast.success(successMessage);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
-      setError(errorMessage)
-      showToast.error(errorMessage)
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error desconocido';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
-      setUpdating(null)
+      setUpdating(null);
     }
-  }
+  };
 
   const openDeleteConfirm = (userId: string, userName: string) => {
-    setDeleteConfirm({ isOpen: true, userId, userName })
-  }
+    setDeleteConfirm({ isOpen: true, userId, userName });
+  };
 
   const closeDeleteConfirm = () => {
-    setDeleteConfirm({ isOpen: false, userId: null, userName: '' })
-  }
+    setDeleteConfirm({ isOpen: false, userId: null, userName: '' });
+  };
 
   const confirmDeleteUser = async () => {
-    if (!deleteConfirm.userId) return
+    if (!deleteConfirm.userId) return;
 
     try {
-      setIsDeleting(true)
+      setIsDeleting(true);
       const response = await fetch(`/api/users/${deleteConfirm.userId}`, {
         method: 'DELETE',
-      })
+      });
 
       if (!response.ok) {
-        throw new Error('Error al eliminar el usuario')
+        throw new Error('Error al eliminar el usuario');
       }
 
-      setUsers(users.filter(u => u._id !== deleteConfirm.userId))
-      closeDeleteConfirm()
-      showToast.success('Usuario eliminado exitosamente')
+      setUsers(users.filter((u) => u._id !== deleteConfirm.userId));
+      closeDeleteConfirm();
+      showToast.success('Usuario eliminado exitosamente');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
-      setError(errorMessage)
-      showToast.error(errorMessage)
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error desconocido';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   const openPromoteConfirm = (userId: string, userName: string) => {
-    setPromoteConfirm({ isOpen: true, userId, userName })
-  }
+    setPromoteConfirm({ isOpen: true, userId, userName });
+  };
 
   const closePromoteConfirm = () => {
-    setPromoteConfirm({ isOpen: false, userId: null, userName: '' })
-  }
+    setPromoteConfirm({ isOpen: false, userId: null, userName: '' });
+  };
 
   const confirmPromoteSuperAdmin = async () => {
-    if (!promoteConfirm.userId) return
+    if (!promoteConfirm.userId) return;
 
     try {
-      setPromoting(promoteConfirm.userId)
-      closePromoteConfirm()
+      setPromoting(promoteConfirm.userId);
+      closePromoteConfirm();
 
       const response = await fetch('/api/users/promote-superadmin', {
         method: 'POST',
@@ -185,61 +190,80 @@ export default function UserList() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ userId: promoteConfirm.userId }),
-      })
+      });
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.message || 'Error al promover usuario')
+        const data = await response.json();
+        throw new Error(data.message || 'Error al promover usuario');
       }
 
-      const data = await response.json()
-      setUsers(users.map(user =>
-        user._id === promoteConfirm.userId ? data.user : user
-      ))
+      const data = await response.json();
+      setUsers(
+        users.map((user) =>
+          user._id === promoteConfirm.userId ? data.user : user
+        )
+      );
 
-      showToast.success(data.message)
+      showToast.success(data.message);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
-      setError(errorMessage)
-      showToast.error(errorMessage)
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error desconocido';
+      setError(errorMessage);
+      showToast.error(errorMessage);
     } finally {
-      setPromoting(null)
+      setPromoting(null);
     }
-  }
+  };
 
   if (loading) {
-    return <div className="p-4">Cargando usuarios...</div>
+    return <div className="p-4">Cargando usuarios...</div>;
   }
 
   if (error) {
-    return <div className="p-4 text-red-600">Error: {error}</div>
+    return <div className="p-4 text-red-600">Error: {error}</div>;
   }
 
   if (users.length === 0) {
-    return <div className="p-4">No hay usuarios registrados</div>
+    return <div className="p-4">No hay usuarios registrados</div>;
   }
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Gestión de Usuarios</h1>
-      
+
       <div className="overflow-x-auto">
         <table className="w-full border-collapse border border-gray-300">
           <thead className="bg-gray-100">
             <tr>
-              <th className="border border-gray-300 px-4 py-2 text-left">Nombre</th>
-              <th className="border border-gray-300 px-4 py-2 text-left">Email</th>
-              <th className="border border-gray-300 px-4 py-2 text-left">WhatsApp</th>
-              <th className="border border-gray-300 px-4 py-2 text-center">Rol</th>
-              <th className="border border-gray-300 px-4 py-2 text-center">Acciones</th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Nombre
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                Email
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-left">
+                WhatsApp
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-center">
+                Rol
+              </th>
+              <th className="border border-gray-300 px-4 py-2 text-center">
+                Acciones
+              </th>
             </tr>
           </thead>
           <tbody>
-            {users.map(user => (
+            {sortedUsers.map((user) => (
               <tr key={user._id} className="hover:bg-gray-50">
-                <td className="border border-gray-300 px-4 py-2">{user.name}</td>
-                <td className="border border-gray-300 px-4 py-2">{user.email}</td>
-                <td className="border border-gray-300 px-4 py-2">{user.whatsapp}</td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {user.name}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {user.email}
+                </td>
+                <td className="border border-gray-300 px-4 py-2">
+                  {user.whatsapp}
+                </td>
                 <td className="border border-gray-300 px-4 py-2 text-center">
                   {user.isSuperAdmin ? (
                     <span className="px-3 py-1 rounded text-white text-sm font-semibold bg-purple-500">
@@ -263,7 +287,9 @@ export default function UserList() {
                         disabled={promoting === user._id}
                         className="px-4 py-2 rounded text-white font-semibold transition bg-purple-500 hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {promoting === user._id ? 'Promoviendo...' : 'Hacer SuperAdmin'}
+                        {promoting === user._id
+                          ? 'Promoviendo...'
+                          : 'Hacer SuperAdmin'}
                       </button>
                     )}
                     {isSuperAdmin && (
@@ -276,9 +302,11 @@ export default function UserList() {
                             : 'bg-blue-500 hover:bg-blue-600'
                         } ${updating === user._id ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
-                        {updating === user._id ? 'Actualizando...' : (
-                          user.isAdmin ? 'Quitar Admin' : 'Hacer Admin'
-                        )}
+                        {updating === user._id
+                          ? 'Actualizando...'
+                          : user.isAdmin
+                            ? 'Quitar Admin'
+                            : 'Hacer Admin'}
                       </button>
                     )}
                     {isSuperAdmin && (
@@ -308,7 +336,9 @@ export default function UserList() {
               </h3>
             </div>
             <p className="mb-6 text-sm text-gray-600">
-              ¿Está seguro que desea {confirmModal.currentStatus ? 'quitar' : 'otorgar'} permisos de administrador al usuario{" "}
+              ¿Está seguro que desea{' '}
+              {confirmModal.currentStatus ? 'quitar' : 'otorgar'} permisos de
+              administrador al usuario{' '}
               <span className="font-semibold">{confirmModal.userName}</span>?
             </p>
             <div className="flex gap-3 justify-end">
@@ -327,7 +357,9 @@ export default function UserList() {
                     : 'bg-blue-600 hover:bg-blue-700'
                 } disabled:opacity-70`}
               >
-                {updating === confirmModal.userId ? 'Actualizando...' : 'Confirmar'}
+                {updating === confirmModal.userId
+                  ? 'Actualizando...'
+                  : 'Confirmar'}
               </button>
             </div>
           </div>
@@ -344,7 +376,7 @@ export default function UserList() {
               </h3>
             </div>
             <p className="mb-6 text-sm text-gray-600">
-              ¿Está seguro que desea eliminar al usuario{" "}
+              ¿Está seguro que desea eliminar al usuario{' '}
               <span className="font-semibold">{deleteConfirm.userName}</span>?
               Esta acción no se puede deshacer.
             </p>
@@ -377,8 +409,15 @@ export default function UserList() {
               </h3>
             </div>
             <p className="mb-6 text-sm text-gray-600">
-              ¿Está seguro que desea promover a <span className="font-semibold">{promoteConfirm.userName}</span> como <span className="font-semibold text-purple-600">SuperAdministrador</span>?
-              Este usuario tendrá acceso total al sistema, incluyendo la capacidad de eliminar productos, facturas y gestionar roles de usuarios.
+              ¿Está seguro que desea promover a{' '}
+              <span className="font-semibold">{promoteConfirm.userName}</span>{' '}
+              como{' '}
+              <span className="font-semibold text-purple-600">
+                SuperAdministrador
+              </span>
+              ? Este usuario tendrá acceso total al sistema, incluyendo la
+              capacidad de eliminar productos, facturas y gestionar roles de
+              usuarios.
             </p>
             <div className="flex gap-3 justify-end">
               <button
@@ -392,12 +431,14 @@ export default function UserList() {
                 disabled={promoting === promoteConfirm.userId}
                 className="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700 disabled:opacity-70"
               >
-                {promoting === promoteConfirm.userId ? 'Promoviendo...' : 'Confirmar'}
+                {promoting === promoteConfirm.userId
+                  ? 'Promoviendo...'
+                  : 'Confirmar'}
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

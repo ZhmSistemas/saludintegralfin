@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { showToast } from "nextjs-toast-notify";
-import { useRouter } from "next/navigation";
-import { Plus, Trash2, DollarSign } from "lucide-react";
-import Image from "next/image";
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { showToast } from 'nextjs-toast-notify';
+import { useRouter } from 'next/navigation';
+import { Plus, Trash2, DollarSign } from 'lucide-react';
+import Image from 'next/image';
 
 type Product = {
   _id: string;
@@ -39,26 +39,26 @@ type Client = {
 export default function InvoiceForm() {
   const [products, setProducts] = useState<Product[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
-  const [selectedClient, setSelectedClient] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [selectedClient, setSelectedClient] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [paymentObservation, setPaymentObservation] = useState("");
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [paymentObservation, setPaymentObservation] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [discount, setDiscount] = useState("");
-  const [clientWhatsapp, setClientWhatsapp] = useState("");
+  const [discount, setDiscount] = useState('');
+  const [clientWhatsapp, setClientWhatsapp] = useState('');
   const [imagen, setImagen] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [observation, setObservation] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [observation, setObservation] = useState('');
 
   const router = useRouter();
 
   const formatPrice = (amount: number) => {
     const rounded = Math.round(amount);
-    return "$" + rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return '$' + rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
   const {
@@ -69,27 +69,36 @@ export default function InvoiceForm() {
     watch,
   } = useForm({
     defaultValues: {
-      customerName: "",
-      invoiceNumber: "",
+      customerName: '',
+      invoiceNumber: '',
       invoiceDate: new Date().toISOString().split('T')[0],
     },
   });
 
-  const customerName = watch("customerName");
-  const invoiceNumber = watch("invoiceNumber");
-  const invoiceDate = watch("invoiceDate");
+  const customerName = watch('customerName');
+  const invoiceNumber = watch('invoiceNumber');
+  const invoiceDate = watch('invoiceDate');
 
   useEffect(() => {
-    fetch("/api/products")
+    fetch('/api/products')
       .then((res) => res.json())
       .then((data) => setProducts(data))
-      .catch((err) => console.error("Error loading products:", err));
+      .catch((err) => console.error('Error loading products:', err));
 
-    fetch("/api/clients")
+    fetch('/api/clients')
       .then((res) => res.json())
       .then((data) => setClients(data))
-      .catch((err) => console.error("Error loading clients:", err));
+      .catch((err) => console.error('Error loading clients:', err));
   }, []);
+
+  const sortedProducts = [...products].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+  );
+  const sortedClients = [...clients].sort((a, b) =>
+    a.establishmentName.localeCompare(b.establishmentName, undefined, {
+      sensitivity: 'base',
+    })
+  );
 
   const subtotal = items.reduce((acc, item) => acc + item.subtotal, 0);
   const discountAmount = Number(discount) || 0;
@@ -104,7 +113,7 @@ export default function InvoiceForm() {
     if (!product) return;
 
     const existingIndex = items.findIndex(
-      (item) => item.productId === selectedProduct,
+      (item) => item.productId === selectedProduct
     );
     if (existingIndex >= 0) {
       const updatedItems = [...items];
@@ -125,7 +134,7 @@ export default function InvoiceForm() {
         },
       ]);
     }
-    setSelectedProduct("");
+    setSelectedProduct('');
     setQuantity(1);
   };
 
@@ -147,10 +156,14 @@ export default function InvoiceForm() {
     if (!paymentAmount || Number(paymentAmount) <= 0) return;
     setPayments([
       ...payments,
-      { amount: paymentAmount, method: paymentMethod, observation: paymentObservation },
+      {
+        amount: paymentAmount,
+        method: paymentMethod,
+        observation: paymentObservation,
+      },
     ]);
-    setPaymentAmount("");
-    setPaymentObservation("");
+    setPaymentAmount('');
+    setPaymentObservation('');
   };
 
   const removePayment = (index: number) => {
@@ -170,25 +183,25 @@ export default function InvoiceForm() {
   const uploadImage = async (file: File) => {
     if (!file) return null;
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
     formData.append(
-      "upload_preset",
-      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "",
+      'upload_preset',
+      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || ''
     );
     // Añade el nombre de la carpeta aquí
-    formData.append("folder", "imageproduct");
+    formData.append('folder', 'imageproduct');
     try {
       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
       if (!cloudName) {
-        throw new Error("El nombre de la nube de Cloudinary no está definido");
+        throw new Error('El nombre de la nube de Cloudinary no está definido');
       }
 
       const res = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         {
-          method: "POST",
+          method: 'POST',
           body: formData,
-        },
+        }
       );
       if (!res.ok) {
         const errorData = await res.json();
@@ -202,35 +215,36 @@ export default function InvoiceForm() {
         image_url: data.secure_url,
       };
     } catch (error) {
-      console.error("Error al subir la imagen:", error);
+      console.error('Error al subir la imagen:', error);
       throw error;
     }
   };
 
   const onSubmit = async () => {
-    if (!customerName || !invoiceNumber || !invoiceDate || items.length === 0) return;
+    if (!customerName || !invoiceNumber || !invoiceDate || items.length === 0)
+      return;
 
     setIsLoading(true);
 
     try {
       if (!imagen) {
-        throw new Error("No se ha seleccionado ninguna imagen");
+        throw new Error('No se ha seleccionado ninguna imagen');
       }
 
       const uploadedImage = await uploadImage(imagen);
       if (!uploadedImage || !uploadedImage.image_url) {
-        throw new Error("No se pudo obtener la URL de la imagen subida");
+        throw new Error('No se pudo obtener la URL de la imagen subida');
       }
 
       const adjustedInvoiceDate = (() => {
-        const date = new Date(invoiceDate + "T00:00:00");
+        const date = new Date(invoiceDate + 'T00:00:00');
         date.setHours(date.getHours() + 5);
         return date.toISOString();
       })();
 
-      const response = await fetch("/api/invoices", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           invoiceNumber,
           customerName,
@@ -250,32 +264,32 @@ export default function InvoiceForm() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Error al crear la factura");
+        throw new Error(errorData.message || 'Error al crear la factura');
       }
 
-      showToast.success("Factura creada exitosamente");
+      showToast.success('Factura creada exitosamente');
       setItems([]);
       setPayments([]);
-      setSelectedProduct("");
+      setSelectedProduct('');
       setQuantity(1);
-      setPaymentAmount("");
+      setPaymentAmount('');
 
       // Notificar al dashboard padre que debe cambiar la selección
       if (window.parent !== window) {
         window.parent.postMessage(
           {
-            type: "UPDATE_DASHBOARD_SELECTION",
-            option: "muestrafactura",
+            type: 'UPDATE_DASHBOARD_SELECTION',
+            option: 'muestrafactura',
           },
-          "*",
+          '*'
         );
       }
-      router.push("/dashboard/facturas/muestrafactura");
+      router.push('/dashboard/facturas/muestrafactura');
     } catch (error) {
       if (error instanceof Error) {
         showToast.error(error.message);
       } else {
-        showToast.error("Ocurrio un error inesperado");
+        showToast.error('Ocurrio un error inesperado');
       }
     } finally {
       setIsLoading(false);
@@ -321,8 +335,8 @@ export default function InvoiceForm() {
             </label>
             <input
               type="text"
-              {...register("invoiceNumber", {
-                required: "El número de factura es obligatorio",
+              {...register('invoiceNumber', {
+                required: 'El número de factura es obligatorio',
               })}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
             />
@@ -340,14 +354,17 @@ export default function InvoiceForm() {
             <input
               type="date"
               max={new Date().toISOString().split('T')[0]}
-              {...register("invoiceDate", {
-                required: "La fecha de factura es obligatoria",
+              {...register('invoiceDate', {
+                required: 'La fecha de factura es obligatoria',
                 validate: (value) => {
-                  const selectedDate = new Date(value)
-                  const today = new Date()
-                  today.setHours(0, 0, 0, 0)
-                  return selectedDate <= today || "La fecha no puede ser posterior al día de hoy"
-                }
+                  const selectedDate = new Date(value);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  return (
+                    selectedDate <= today ||
+                    'La fecha no puede ser posterior al día de hoy'
+                  );
+                },
               })}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
             />
@@ -368,17 +385,17 @@ export default function InvoiceForm() {
                 setSelectedClient(e.target.value);
                 const client = clients.find((c) => c._id === e.target.value);
                 if (client) {
-                  setValue("customerName", client.establishmentName);
+                  setValue('customerName', client.establishmentName);
                   setClientWhatsapp(client.whatsapp || client._id);
                 } else {
-                  setValue("customerName", "");
-                  setClientWhatsapp("");
+                  setValue('customerName', '');
+                  setClientWhatsapp('');
                 }
               }}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
             >
               <option value="">Seleccionar cliente</option>
-              {clients.map((client) => (
+              {sortedClients.map((client) => (
                 <option key={client._id} value={client._id}>
                   {client.establishmentName} - {client.contactName}
                 </option>
@@ -432,7 +449,7 @@ export default function InvoiceForm() {
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
               >
                 <option value="">Seleccionar producto</option>
-                {products.map((product) => (
+                {sortedProducts.map((product) => (
                   <option key={product._id} value={product._id}>
                     {product.name} - {formatPrice(product.price)}
                   </option>
@@ -610,18 +627,18 @@ export default function InvoiceForm() {
                         {formatPrice(Number(payment.amount))}
                       </td>
                       <td className="py-2">
-                        {payment.method === "cash"
-                          ? "Efectivo"
-                          : payment.method === "card"
-                            ? "Tarjeta"
-                            : payment.method === "cruce"
-                              ? "Cruce Cuentas"
-                              : payment.method === "other"
-                                ? "Otro"
-                                : "Transferencia"}
+                        {payment.method === 'cash'
+                          ? 'Efectivo'
+                          : payment.method === 'card'
+                            ? 'Tarjeta'
+                            : payment.method === 'cruce'
+                              ? 'Cruce Cuentas'
+                              : payment.method === 'other'
+                                ? 'Otro'
+                                : 'Transferencia'}
                       </td>
                       <td className="py-2 text-sm text-gray-600">
-                        {payment.observation || "—"}
+                        {payment.observation || '—'}
                       </td>
                       <td className="py-2">
                         <button
@@ -669,7 +686,7 @@ export default function InvoiceForm() {
             <div className="flex justify-between border-t pt-2">
               <span className="text-base font-semibold">Saldo Pendiente:</span>
               <span
-                className={`text-base font-bold ${balance > 0 ? "text-red-600" : "text-green-600"}`}
+                className={`text-base font-bold ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}
               >
                 {formatPrice(balance)}
               </span>
@@ -682,7 +699,7 @@ export default function InvoiceForm() {
           disabled={isLoading || items.length === 0}
           className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-70"
         >
-          {isLoading ? "Guardando..." : "Guardar Factura"}
+          {isLoading ? 'Guardando...' : 'Guardar Factura'}
         </button>
       </form>
     </div>

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { use, useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { showToast } from "nextjs-toast-notify";
-import { useRouter } from "next/navigation";
-import { Plus, Trash2, DollarSign } from "lucide-react";
-import Image from "next/image";
+import { use, useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { showToast } from 'nextjs-toast-notify';
+import { useRouter } from 'next/navigation';
+import { Plus, Trash2, DollarSign } from 'lucide-react';
+import Image from 'next/image';
 
 type Product = {
   _id: string;
@@ -53,22 +53,26 @@ type InvoiceData = {
   image?: string;
 };
 
-export default function EditInvoicePage({ params }: { params: Promise<{ id: string }> }) {
+export default function EditInvoicePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const [products, setProducts] = useState<Product[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
-  const [selectedClient, setSelectedClient] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [selectedClient, setSelectedClient] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [paymentAmount, setPaymentAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
   const [isLoading, setIsLoading] = useState(false);
-  const [discount, setDiscount] = useState("");
-  const [clientWhatsapp, setClientWhatsapp] = useState("");
+  const [discount, setDiscount] = useState('');
+  const [clientWhatsapp, setClientWhatsapp] = useState('');
   const [imagen, setImagen] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [previewUrl, setPreviewUrl] = useState<string>('');
   const [invoice, setInvoice] = useState<InvoiceData | null>(null);
   const [isLoadingInvoice, setIsLoadingInvoice] = useState(true);
 
@@ -82,9 +86,9 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     formState: { errors },
   } = useForm({
     defaultValues: {
-      customerName: "",
-      invoiceNumber: "",
-      invoiceDate: "",
+      customerName: '',
+      invoiceNumber: '',
+      invoiceDate: '',
     },
   });
 
@@ -94,14 +98,14 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     const loadData = async () => {
       try {
         const [productsRes, clientsRes, invoiceRes] = await Promise.all([
-          fetch("/api/products"),
-          fetch("/api/clients"),
-          fetch(`/api/invoices/${id}`)
+          fetch('/api/products'),
+          fetch('/api/clients'),
+          fetch(`/api/invoices/${id}`),
         ]);
 
-        if (!productsRes.ok) throw new Error("Error cargando productos");
-        if (!clientsRes.ok) throw new Error("Error cargando clientes");
-        if (!invoiceRes.ok) throw new Error("Error cargando factura");
+        if (!productsRes.ok) throw new Error('Error cargando productos');
+        if (!clientsRes.ok) throw new Error('Error cargando clientes');
+        if (!invoiceRes.ok) throw new Error('Error cargando factura');
 
         if (!isMounted) return;
 
@@ -113,30 +117,32 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
         setClients(clientsData);
 
         setInvoice(invoiceData);
-        setValue("customerName", invoiceData.customerName);
-        setValue("invoiceNumber", invoiceData.invoiceNumber);
-        
+        setValue('customerName', invoiceData.customerName);
+        setValue('invoiceNumber', invoiceData.invoiceNumber);
+
         if (invoiceData.invoiceDate) {
           const date = new Date(invoiceData.invoiceDate);
           date.setHours(date.getHours() - 5);
-          setValue("invoiceDate", date.toISOString().split('T')[0]);
+          setValue('invoiceDate', date.toISOString().split('T')[0]);
         }
-        
-        const whatsapp = invoiceData.clientWhatsapp || "";
+
+        const whatsapp = invoiceData.clientWhatsapp || '';
         setClientWhatsapp(whatsapp);
         setItems(invoiceData.items || []);
         setPayments(
-          (invoiceData.payments || []).map((p: { amount: number; method?: string; date?: string }) => ({
-            amount: p.amount.toString(),
-            method: p.method || "cash",
-            date: p.date,
-          }))
+          (invoiceData.payments || []).map(
+            (p: { amount: number; method?: string; date?: string }) => ({
+              amount: p.amount.toString(),
+              method: p.method || 'cash',
+              date: p.date,
+            })
+          )
         );
         setDiscount((invoiceData.discount || 0).toString());
 
         if (whatsapp && clientsData.length > 0) {
-          const matchedClient = clientsData.find((c: Client) => 
-            c._id === whatsapp || c.whatsapp === whatsapp
+          const matchedClient = clientsData.find(
+            (c: Client) => c._id === whatsapp || c.whatsapp === whatsapp
           );
           if (matchedClient) {
             setSelectedClient(matchedClient._id);
@@ -145,9 +151,11 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
 
         setIsLoadingInvoice(false);
       } catch (err) {
-        console.error("Error loading data:", err);
+        console.error('Error loading data:', err);
         if (isMounted) {
-          showToast.error(err instanceof Error ? err.message : "Error al cargar los datos");
+          showToast.error(
+            err instanceof Error ? err.message : 'Error al cargar los datos'
+          );
           setIsLoadingInvoice(false);
         }
       }
@@ -155,53 +163,71 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
 
     loadData();
 
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   const formatPrice = (amount: number) => {
     const rounded = Math.round(amount);
-    return "$" + rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return '$' + rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
-  const customerName = watch("customerName");
-  const invoiceDate = watch("invoiceDate");
+  const sortedProducts = [...products].sort((a, b) =>
+    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+  );
+  const sortedClients = [...clients].sort((a, b) =>
+    a.establishmentName.localeCompare(b.establishmentName, undefined, {
+      sensitivity: 'base',
+    })
+  );
+
+  const customerName = watch('customerName');
+  const invoiceDate = watch('invoiceDate');
 
   useEffect(() => {
-    fetch("/api/products")
+    fetch('/api/products')
       .then((res) => res.json())
       .then((data) => setProducts(data))
-      .catch((err) => console.error("Error loading products:", err));
+      .catch((err) => console.error('Error loading products:', err));
 
-    fetch("/api/clients")
+    fetch('/api/clients')
       .then((res) => res.json())
       .then((data) => {
-        console.log("Clients loaded:", data.length);
+        console.log('Clients loaded:', data.length);
         setClients(data);
       })
-      .catch((err) => console.error("Error loading clients:", err));
+      .catch((err) => console.error('Error loading clients:', err));
 
     fetch(`/api/invoices/${id}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("Invoice loaded:", data.invoiceNumber, "clientWhatsapp:", data.clientWhatsapp);
+        console.log(
+          'Invoice loaded:',
+          data.invoiceNumber,
+          'clientWhatsapp:',
+          data.clientWhatsapp
+        );
         setInvoice(data);
-        setValue("customerName", data.customerName);
-        setValue("invoiceNumber", data.invoiceNumber);
-        setClientWhatsapp(data.clientWhatsapp || "");
+        setValue('customerName', data.customerName);
+        setValue('invoiceNumber', data.invoiceNumber);
+        setClientWhatsapp(data.clientWhatsapp || '');
         setItems(data.items || []);
         setPayments(
-          (data.payments || []).map((p: { amount: number; method?: string; date?: string }) => ({
-            amount: p.amount.toString(),
-            method: p.method || "cash",
-            date: p.date,
-          }))
+          (data.payments || []).map(
+            (p: { amount: number; method?: string; date?: string }) => ({
+              amount: p.amount.toString(),
+              method: p.method || 'cash',
+              date: p.date,
+            })
+          )
         );
         setDiscount((data.discount || 0).toString());
         setIsLoadingInvoice(false);
       })
       .catch((err) => {
-        console.error("Error loading invoice:", err);
-        showToast.error("Error al cargar la factura");
+        console.error('Error loading invoice:', err);
+        showToast.error('Error al cargar la factura');
         setIsLoadingInvoice(false);
       });
   }, [id, setValue]);
@@ -219,7 +245,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     if (!product) return;
 
     const existingIndex = items.findIndex(
-      (item) => item.productId === selectedProduct,
+      (item) => item.productId === selectedProduct
     );
     if (existingIndex >= 0) {
       const updatedItems = [...items];
@@ -240,7 +266,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
         },
       ]);
     }
-    setSelectedProduct("");
+    setSelectedProduct('');
     setQuantity(1);
   };
 
@@ -264,7 +290,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
       ...payments,
       { amount: paymentAmount, method: paymentMethod },
     ]);
-    setPaymentAmount("");
+    setPaymentAmount('');
   };
 
   const removePayment = (index: number) => {
@@ -283,24 +309,24 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
   const uploadImage = async (file: File) => {
     if (!file) return null;
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append('file', file);
     formData.append(
-      "upload_preset",
-      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "",
+      'upload_preset',
+      process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || ''
     );
-    formData.append("folder", "imageproduct");
+    formData.append('folder', 'imageproduct');
     try {
       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
       if (!cloudName) {
-        throw new Error("El nombre de la nube de Cloudinary no está definido");
+        throw new Error('El nombre de la nube de Cloudinary no está definido');
       }
 
       const res = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         {
-          method: "POST",
+          method: 'POST',
           body: formData,
-        },
+        }
       );
       if (!res.ok) {
         const errorData = await res.json();
@@ -313,7 +339,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
         image_url: data.secure_url,
       };
     } catch (error) {
-      console.error("Error al subir la imagen:", error);
+      console.error('Error al subir la imagen:', error);
       throw error;
     }
   };
@@ -324,7 +350,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
     setIsLoading(true);
 
     try {
-      let imageUrl = invoice?.image || "";
+      let imageUrl = invoice?.image || '';
 
       if (imagen) {
         const uploadedImage = await uploadImage(imagen);
@@ -333,15 +359,17 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
         }
       }
 
-      const adjustedInvoiceDate = invoiceDate ? (() => {
-        const date = new Date(invoiceDate + "T00:00:00");
-        date.setHours(date.getHours() + 5);
-        return date.toISOString();
-      })() : undefined;
+      const adjustedInvoiceDate = invoiceDate
+        ? (() => {
+            const date = new Date(invoiceDate + 'T00:00:00');
+            date.setHours(date.getHours() + 5);
+            return date.toISOString();
+          })()
+        : undefined;
 
       const response = await fetch(`/api/invoices/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customerName,
           clientWhatsapp,
@@ -358,16 +386,16 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Error al actualizar la factura");
+        throw new Error(errorData.message || 'Error al actualizar la factura');
       }
 
-      showToast.success("Factura actualizada exitosamente");
-      router.push("/dashboard/facturas/muestrafactura");
+      showToast.success('Factura actualizada exitosamente');
+      router.push('/dashboard/facturas/muestrafactura');
     } catch (error) {
       if (error instanceof Error) {
         showToast.error(error.message);
       } else {
-        showToast.error("Ocurrio un error inesperado");
+        showToast.error('Ocurrio un error inesperado');
       }
     } finally {
       setIsLoading(false);
@@ -436,8 +464,8 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
             </label>
             <input
               type="text"
-              {...register("invoiceNumber", {
-                required: "El número de factura es obligatorio",
+              {...register('invoiceNumber', {
+                required: 'El número de factura es obligatorio',
               })}
               readOnly
               className="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 px-3 py-2 shadow-sm sm:text-sm"
@@ -451,14 +479,17 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
             <input
               type="date"
               max={new Date().toISOString().split('T')[0]}
-              {...register("invoiceDate", {
-                required: "La fecha de factura es obligatoria",
+              {...register('invoiceDate', {
+                required: 'La fecha de factura es obligatoria',
                 validate: (value) => {
-                  const selectedDate = new Date(value)
-                  const today = new Date()
-                  today.setHours(0, 0, 0, 0)
-                  return selectedDate <= today || "La fecha no puede ser posterior al día de hoy"
-                }
+                  const selectedDate = new Date(value);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0);
+                  return (
+                    selectedDate <= today ||
+                    'La fecha no puede ser posterior al día de hoy'
+                  );
+                },
               })}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
             />
@@ -479,14 +510,14 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
                 setSelectedClient(e.target.value);
                 const client = clients.find((c) => c._id === e.target.value);
                 if (client) {
-                  setValue("customerName", client.establishmentName);
+                  setValue('customerName', client.establishmentName);
                   setClientWhatsapp(client.whatsapp || client._id);
                 }
               }}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
             >
               <option value="">Seleccionar cliente</option>
-              {clients.map((client) => (
+              {sortedClients.map((client) => (
                 <option key={client._id} value={client._id}>
                   {client.establishmentName} - {client.contactName}
                 </option>
@@ -522,7 +553,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
               >
                 <option value="">Seleccionar producto</option>
-                {products.map((product) => (
+                {sortedProducts.map((product) => (
                   <option key={product._id} value={product._id}>
                     {product.name} - {formatPrice(product.price)}
                   </option>
@@ -685,11 +716,11 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
                         {formatPrice(Number(payment.amount))}
                       </td>
                       <td className="py-2">
-                        {payment.method === "cash"
-                          ? "Efectivo"
-                          : payment.method === "card"
-                            ? "Tarjeta"
-                            : "Transferencia"}
+                        {payment.method === 'cash'
+                          ? 'Efectivo'
+                          : payment.method === 'card'
+                            ? 'Tarjeta'
+                            : 'Transferencia'}
                       </td>
                       <td className="py-2">
                         <button
@@ -737,7 +768,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
             <div className="flex justify-between border-t pt-2">
               <span className="text-base font-semibold">Saldo Pendiente:</span>
               <span
-                className={`text-base font-bold ${balance > 0 ? "text-red-600" : "text-green-600"}`}
+                className={`text-base font-bold ${balance > 0 ? 'text-red-600' : 'text-green-600'}`}
               >
                 {formatPrice(balance)}
               </span>
@@ -750,7 +781,7 @@ export default function EditInvoicePage({ params }: { params: Promise<{ id: stri
           disabled={isLoading || items.length === 0}
           className="w-full rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-70"
         >
-          {isLoading ? "Actualizando..." : "Actualizar Factura"}
+          {isLoading ? 'Actualizando...' : 'Actualizar Factura'}
         </button>
       </form>
     </div>
