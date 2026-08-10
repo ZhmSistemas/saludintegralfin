@@ -1,15 +1,10 @@
-"use client";
+'use client';
 
-import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
-import { showToast } from "nextjs-toast-notify";
-import {
-  ChevronDown,
-  ChevronUp,
-  Package,
-  X,
-} from "lucide-react";
-import Image from "next/image";
+import { useSession } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { showToast } from 'nextjs-toast-notify';
+import { ChevronDown, ChevronUp, Package, X } from 'lucide-react';
+import Image from 'next/image';
 
 type InvoiceItem = {
   productId: string;
@@ -23,6 +18,8 @@ type Payment = {
   amount: number;
   date: string;
   method: string;
+  observation?: string;
+  image?: string;
 };
 
 type Invoice = {
@@ -38,7 +35,7 @@ type Invoice = {
   payments: Payment[];
   paidAmount: number;
   balance: number;
-  status: "pending" | "partial" | "paid";
+  status: 'pending' | 'partial' | 'paid';
   image?: string;
   createdAt: string;
 };
@@ -49,33 +46,33 @@ export default function ListaFacturas() {
   const [loading, setLoading] = useState(true);
   const [expandedInvoice, setExpandedInvoice] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sortField, setSortField] = useState<"number" | "date">("number");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortField, setSortField] = useState<'number' | 'date'>('number');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
   const formatPrice = (amount: number) => {
     const rounded = Math.round(amount);
-    return "$" + rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return '$' + rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
+    return date.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
     });
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "paid":
+      case 'paid':
         return (
           <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
             Pagada
           </span>
         );
-      case "partial":
+      case 'partial':
         return (
           <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
             Abonada
@@ -99,12 +96,16 @@ export default function ListaFacturas() {
   const fetchInvoices = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/invoices?clientWhatsapp=${session?.user?.whatsapp}`);
-      if (!res.ok) throw new Error("Error al cargar facturas");
+      const res = await fetch(
+        `/api/invoices?clientWhatsapp=${session?.user?.whatsapp}`
+      );
+      if (!res.ok) throw new Error('Error al cargar facturas');
       const data = await res.json();
       setInvoices(data);
     } catch (err) {
-      showToast.error(err instanceof Error ? err.message : "Error al cargar facturas");
+      showToast.error(
+        err instanceof Error ? err.message : 'Error al cargar facturas'
+      );
     } finally {
       setLoading(false);
     }
@@ -114,49 +115,55 @@ export default function ListaFacturas() {
     setExpandedInvoice(expandedInvoice === id ? null : id);
   };
 
-  const addPayment = async (invoiceId: string, amount: string, method: string) => {
+  const addPayment = async (
+    invoiceId: string,
+    amount: string,
+    method: string
+  ) => {
     try {
       const res = await fetch(`/api/invoices/${invoiceId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           payment: { amount: Number(amount), method },
         }),
       });
 
-      if (!res.ok) throw new Error("Error al registrar abono");
+      if (!res.ok) throw new Error('Error al registrar abono');
 
       const { invoice: updatedInvoice } = await res.json();
       setInvoices(
         invoices.map((inv) => (inv._id === invoiceId ? updatedInvoice : inv))
       );
-      showToast.success("Abono registrado exitosamente");
+      showToast.success('Abono registrado exitosamente');
     } catch {
-      showToast.error("Error al registrar el abono");
+      showToast.error('Error al registrar el abono');
     }
   };
 
-  const toggleSort = (field: "number" | "date") => {
+  const toggleSort = (field: 'number' | 'date') => {
     if (sortField === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortField(field);
-      setSortOrder("asc");
+      setSortOrder('asc');
     }
   };
 
   const filteredInvoices = invoices
     .filter((invoice) => {
-      if (statusFilter === "all") return true;
+      if (statusFilter === 'all') return true;
       return invoice.status === statusFilter;
     })
     .sort((a, b) => {
-      if (sortField === "number") {
+      if (sortField === 'number') {
         const diff = Number(a.invoiceNumber) - Number(b.invoiceNumber);
-        return sortOrder === "asc" ? diff : -diff;
+        return sortOrder === 'asc' ? diff : -diff;
       } else {
-        const diff = new Date(a.invoiceDate || a.createdAt).getTime() - new Date(b.invoiceDate || b.createdAt).getTime();
-        return sortOrder === "asc" ? diff : -diff;
+        const diff =
+          new Date(a.invoiceDate || a.createdAt).getTime() -
+          new Date(b.invoiceDate || b.createdAt).getTime();
+        return sortOrder === 'asc' ? diff : -diff;
       }
     });
 
@@ -172,79 +179,81 @@ export default function ListaFacturas() {
     <div className="mx-auto w-full p-6 lg:w-5/6">
       <h1 className="mb-6 text-3xl font-bold text-gray-900">Mis Facturas</h1>
       <div className="mb-4">
-        <p className="text-sm text-gray-600">Usuario: {session?.user?.name}</p>        
+        <p className="text-sm text-gray-600">Usuario: {session?.user?.name}</p>
       </div>
 
       {invoices.length > 0 && (
         <div className="mb-4 flex flex-col gap-3">
           <div className="flex gap-2 overflow-x-auto pb-1">
             <button
-              onClick={() => setStatusFilter("all")}
+              onClick={() => setStatusFilter('all')}
               className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex-shrink-0 ${
-                statusFilter === "all"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-200 text-gray-700"
+                statusFilter === 'all'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 text-gray-700'
               }`}
             >
               Todas
             </button>
             <button
-              onClick={() => setStatusFilter("pending")}
+              onClick={() => setStatusFilter('pending')}
               className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex-shrink-0 ${
-                statusFilter === "pending"
-                  ? "bg-red-600 text-white"
-                  : "bg-gray-200 text-gray-700"
+                statusFilter === 'pending'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-gray-200 text-gray-700'
               }`}
             >
               Pendientes
             </button>
             <button
-              onClick={() => setStatusFilter("partial")}
+              onClick={() => setStatusFilter('partial')}
               className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex-shrink-0 ${
-                statusFilter === "partial"
-                  ? "bg-yellow-600 text-white"
-                  : "bg-gray-200 text-gray-700"
+                statusFilter === 'partial'
+                  ? 'bg-yellow-600 text-white'
+                  : 'bg-gray-200 text-gray-700'
               }`}
             >
               Abonadas
             </button>
             <button
-              onClick={() => setStatusFilter("paid")}
+              onClick={() => setStatusFilter('paid')}
               className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex-shrink-0 ${
-                statusFilter === "paid"
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-200 text-gray-700"
+                statusFilter === 'paid'
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-200 text-gray-700'
               }`}
             >
               Pagadas
             </button>
           </div>
           <div className="flex gap-2 items-center">
-            <span className="text-sm text-gray-500 whitespace-nowrap">Ordenar:</span>
+            <span className="text-sm text-gray-500 whitespace-nowrap">
+              Ordenar:
+            </span>
             <button
-              onClick={() => toggleSort("number")}
+              onClick={() => toggleSort('number')}
               className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex items-center gap-1 ${
-                sortField === "number"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-200 text-gray-700"
+                sortField === 'number'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 text-gray-700'
               }`}
             >
               Factura
-              {sortField === "number" && (
-                <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+              {sortField === 'number' && (
+                <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
               )}
             </button>
             <button
-              onClick={() => toggleSort("date")}
+              onClick={() => toggleSort('date')}
               className={`rounded-md px-3 py-1 text-sm font-medium whitespace-nowrap flex items-center gap-1 ${
-                sortField === "date"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-gray-200 text-gray-700"
+                sortField === 'date'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-gray-200 text-gray-700'
               }`}
             >
               Fecha
-              {sortField === "date" && (
-                <span>{sortOrder === "asc" ? "↑" : "↓"}</span>
+              {sortField === 'date' && (
+                <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
               )}
             </button>
           </div>
@@ -254,47 +263,76 @@ export default function ListaFacturas() {
       {filteredInvoices.length > 0 && (
         <div className="mb-6 grid w-full grid-cols-2 gap-3 md:grid-cols-4">
           <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-center">
-            <p className="text-xs font-medium text-indigo-600 uppercase">Todas</p>
+            <p className="text-xs font-medium text-indigo-600 uppercase">
+              Todas
+            </p>
             <p className="text-lg font-bold text-indigo-700">
-              {formatPrice(filteredInvoices.reduce((sum, inv) => sum + inv.total, 0))}
+              {formatPrice(
+                filteredInvoices.reduce((sum, inv) => sum + inv.total, 0)
+              )}
             </p>
             <p className="mt-1 text-xs text-indigo-500">
-              {filteredInvoices.length} factura{filteredInvoices.length !== 1 ? "s" : ""}
+              {filteredInvoices.length} factura
+              {filteredInvoices.length !== 1 ? 's' : ''}
             </p>
           </div>
           <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-center">
-            <p className="text-xs font-medium text-red-600 uppercase">Pendiente</p>
+            <p className="text-xs font-medium text-red-600 uppercase">
+              Pendiente
+            </p>
             <p className="text-lg font-bold text-red-700">
-              {formatPrice(filteredInvoices.reduce((sum, inv) => sum + inv.balance, 0))}
+              {formatPrice(
+                filteredInvoices.reduce((sum, inv) => sum + inv.balance, 0)
+              )}
             </p>
             <p className="mt-1 text-xs text-red-500">
-              {filteredInvoices.filter((inv) => inv.balance > 0).length} factura{filteredInvoices.filter((inv) => inv.balance > 0).length !== 1 ? "s" : ""}
+              {filteredInvoices.filter((inv) => inv.balance > 0).length} factura
+              {filteredInvoices.filter((inv) => inv.balance > 0).length !== 1
+                ? 's'
+                : ''}
             </p>
           </div>
           <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-center">
-            <p className="text-xs font-medium text-yellow-600 uppercase">Abonos</p>
+            <p className="text-xs font-medium text-yellow-600 uppercase">
+              Abonos
+            </p>
             <p className="text-lg font-bold text-yellow-700">
               {formatPrice(
                 filteredInvoices
-                  .filter((inv) => inv.status === "partial")
-                  .reduce((sum, inv) => sum + inv.paidAmount, 0),
+                  .filter((inv) => inv.status === 'partial')
+                  .reduce((sum, inv) => sum + inv.paidAmount, 0)
               )}
             </p>
             <p className="mt-1 text-xs text-yellow-500">
-              {filteredInvoices.filter((inv) => inv.status === "partial").length} factura{filteredInvoices.filter((inv) => inv.status === "partial").length !== 1 ? "s" : ""}
+              {
+                filteredInvoices.filter((inv) => inv.status === 'partial')
+                  .length
+              }{' '}
+              factura
+              {filteredInvoices.filter((inv) => inv.status === 'partial')
+                .length !== 1
+                ? 's'
+                : ''}
             </p>
           </div>
           <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center">
-            <p className="text-xs font-medium text-green-600 uppercase">Pagada</p>
+            <p className="text-xs font-medium text-green-600 uppercase">
+              Pagada
+            </p>
             <p className="text-lg font-bold text-green-700">
               {formatPrice(
                 filteredInvoices
-                  .filter((inv) => inv.status === "paid")
-                  .reduce((sum, inv) => sum + inv.total, 0),
+                  .filter((inv) => inv.status === 'paid')
+                  .reduce((sum, inv) => sum + inv.total, 0)
               )}
             </p>
             <p className="mt-1 text-xs text-green-500">
-              {filteredInvoices.filter((inv) => inv.status === "paid").length} factura{filteredInvoices.filter((inv) => inv.status === "paid").length !== 1 ? "s" : ""}
+              {filteredInvoices.filter((inv) => inv.status === 'paid').length}{' '}
+              factura
+              {filteredInvoices.filter((inv) => inv.status === 'paid')
+                .length !== 1
+                ? 's'
+                : ''}
             </p>
           </div>
         </div>
@@ -311,25 +349,25 @@ export default function ListaFacturas() {
               key={invoice._id}
               className={`rounded-lg border shadow-sm transition-all duration-200 ${
                 expandedInvoice === invoice._id
-                  ? invoice.status === "paid"
-                    ? "bg-green-100 border-green-300 ring-2 ring-green-400"
-                    : invoice.status === "partial"
-                    ? "bg-yellow-100 border-yellow-300 ring-2 ring-yellow-400"
-                    : "bg-red-100 border-red-300 ring-2 ring-red-400"
-                  : invoice.status === "paid"
-                  ? "bg-green-50 border-green-200"
-                  : invoice.status === "partial"
-                  ? "bg-yellow-50 border-yellow-200"
-                  : "bg-red-50 border-red-200"
+                  ? invoice.status === 'paid'
+                    ? 'bg-green-100 border-green-300 ring-2 ring-green-400'
+                    : invoice.status === 'partial'
+                      ? 'bg-yellow-100 border-yellow-300 ring-2 ring-yellow-400'
+                      : 'bg-red-100 border-red-300 ring-2 ring-red-400'
+                  : invoice.status === 'paid'
+                    ? 'bg-green-50 border-green-200'
+                    : invoice.status === 'partial'
+                      ? 'bg-yellow-50 border-yellow-200'
+                      : 'bg-red-50 border-red-200'
               }`}
             >
               <div
                 className={`flex flex-col sm:flex-row cursor-pointer items-start sm:items-center justify-between p-4 gap-3 sm:gap-0 ${
-                  invoice.status === "paid"
-                    ? "hover:bg-green-100"
-                    : invoice.status === "partial"
-                    ? "hover:bg-yellow-100"
-                    : "hover:bg-red-100"
+                  invoice.status === 'paid'
+                    ? 'hover:bg-green-100'
+                    : invoice.status === 'partial'
+                      ? 'hover:bg-yellow-100'
+                      : 'hover:bg-red-100'
                 }`}
                 onClick={() => toggleExpand(invoice._id)}
               >
@@ -374,12 +412,12 @@ export default function ListaFacturas() {
                       Total: {formatPrice(invoice.total)}
                     </p>
                     <p className="text-sm text-gray-600">
-                      Saldo:{" "}
+                      Saldo:{' '}
                       <span
                         className={
                           invoice.balance > 0
-                            ? "text-red-600"
-                            : "text-green-600"
+                            ? 'text-red-600'
+                            : 'text-green-600'
                         }
                       >
                         {formatPrice(invoice.balance)}
@@ -449,6 +487,8 @@ export default function ListaFacturas() {
                                 <th className="pb-2">Monto</th>
                                 <th className="pb-2">Método</th>
                                 <th className="pb-2">Fecha</th>
+                                <th className="pb-2">Observación</th>
+                                <th className="pb-2">Imagen</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -458,14 +498,44 @@ export default function ListaFacturas() {
                                     {formatPrice(payment.amount)}
                                   </td>
                                   <td className="py-2">
-                                    {payment.method === "cash"
-                                      ? "Efectivo"
-                                      : payment.method === "card"
-                                      ? "Tarjeta"
-                                      : "Transferencia"}
+                                    {payment.method === 'cash'
+                                      ? 'Efectivo'
+                                      : payment.method === 'card'
+                                        ? 'Tarjeta'
+                                        : payment.method === 'transfer'
+                                          ? 'Transferencia'
+                                          : payment.method === 'cruce'
+                                            ? 'Cruce Cuentas'
+                                            : 'Otro'}
                                   </td>
                                   <td className="py-2">
                                     {formatDate(payment.date)}
+                                  </td>
+                                  <td className="py-2 text-sm text-gray-600">
+                                    {payment.observation || '—'}
+                                  </td>
+                                  <td className="py-2">
+                                    {payment.image ? (
+                                      <div
+                                        className="h-10 w-10 cursor-pointer overflow-hidden rounded-md border border-gray-200"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedImage(payment.image!);
+                                        }}
+                                      >
+                                        <Image
+                                          src={payment.image}
+                                          alt="Comprobante del abono"
+                                          width={40}
+                                          height={40}
+                                          className="h-full w-full object-cover"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <span className="text-sm text-gray-400">
+                                        —
+                                      </span>
+                                    )}
                                   </td>
                                 </tr>
                               ))}
@@ -507,7 +577,7 @@ export default function ListaFacturas() {
                       <div>
                         <span className="text-gray-600">Saldo:</span>
                         <p
-                          className={`font-bold ${invoice.balance > 0 ? "text-red-600" : "text-green-600"}`}
+                          className={`font-bold ${invoice.balance > 0 ? 'text-red-600' : 'text-green-600'}`}
                         >
                           {formatPrice(invoice.balance)}
                         </p>
