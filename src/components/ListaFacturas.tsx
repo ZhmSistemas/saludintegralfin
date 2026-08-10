@@ -597,19 +597,22 @@ export default function ListaFacturas() {
           onClick={() => setSelectedImage(null)}
         >
           <button
+            type="button"
             onClick={() => setSelectedImage(null)}
-            className="absolute right-4 top-4 z-[60] rounded-full bg-white/20 p-2 text-white transition-colors hover:bg-white/40"
+            className="absolute right-4 top-4 z-50 rounded-full bg-red-600 p-2 text-white shadow-lg transition-colors hover:bg-red-500"
           >
             <X className="h-6 w-6" />
           </button>
-          <Image
-            src={selectedImage}
-            alt="Factura ampliada"
-            width={1200}
-            height={1600}
-            className="relative z-10 max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
+          <div className="relative z-10">
+            <Image
+              src={selectedImage}
+              alt="Factura ampliada"
+              width={1200}
+              height={1600}
+              className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
         </div>
       )}
     </div>
