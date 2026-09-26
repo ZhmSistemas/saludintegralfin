@@ -9,7 +9,11 @@ import type { Product } from '@/lib/models/ProductModel';
 
 export const dynamic = 'force-dynamic';
 
-const ProductDetailPage = async ({ params }: { params: Promise<{ id: string }> }) => {
+const ProductDetailPage = async ({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) => {
   const { id } = await params;
   await dbConnect();
   const product: Product | null = await ProductModel.findById(id);
@@ -42,8 +46,8 @@ const ProductDetailPage = async ({ params }: { params: Promise<{ id: string }> }
 
       {/* Product Detail */}
       <div className="px-6 sm:px-12 lg:px-20 pb-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             {/* Image Column */}
             <div className="relative rounded-3xl overflow-hidden border border-green-500/20 bg-gray-950">
               {product.image ? (
@@ -66,7 +70,7 @@ const ProductDetailPage = async ({ params }: { params: Promise<{ id: string }> }
             {/* Info Column */}
             <div className="flex flex-col gap-6">
               <div>
-                <h1 className="text-4xl sm:text-5xl font-black text-white mb-4">
+                <h1 className="text-3xl sm:text-4xl font-black text-white mb-4">
                   {product.name}
                 </h1>
 
@@ -88,7 +92,7 @@ const ProductDetailPage = async ({ params }: { params: Promise<{ id: string }> }
                   <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
                     Descripción
                   </h2>
-                  <p className="text-gray-300 text-lg leading-relaxed">
+                  <p className="text-base lg:text-lg text-gray-300 leading-relaxed">
                     {product.description}
                   </p>
                 </div>
@@ -101,7 +105,9 @@ const ProductDetailPage = async ({ params }: { params: Promise<{ id: string }> }
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Stock disponible</p>
-                    <p className="text-xl font-bold text-white">{product.stock} unidades</p>
+                    <p className="text-xl font-bold text-white">
+                      {product.stock} unidades
+                    </p>
                   </div>
                 </div>
               </div>
